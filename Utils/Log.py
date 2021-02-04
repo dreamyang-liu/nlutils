@@ -84,7 +84,7 @@ class Logger(object):
             start = time.time()
             func()
             end = time.time()
-            print("\033[1;36m{}\033[0m \033[4;32m{}\033[0m \033[1;34mPERFORMANCE LOG: {} consumes {} s\033[0m".format(get_local_time(), os.path.realpath(__file__), func.__name__, end -start))
+            print("\033[1;36m{}\033[0m \033[4;32m{}\033[0m \033[1;34mPERFORMANCE LOG: {} consumes {} seconds\033[0m".format(get_local_time(), os.path.realpath(__file__), func.__name__, end -start))
         return wrapper        
 
 
@@ -94,11 +94,11 @@ class Logger(object):
 def calculate_time():
     for i in range(1000000):
         i
-    Logger.instance().log_warning("This is a test performance")
+
+if __name__ == '__main__':
+    calculate_time()
+    Logger.instance().log_warning("This is a test warning.")
     Logger.instance().log_error("This is a test error.")
     Logger.instance().log_fatal("This is a test fatal.")
     Logger.instance().log_info("This is a test info.")
     Logger.instance().log_debug("This is a test debug.")
-
-if __name__ == '__main__':
-    calculate_time()
