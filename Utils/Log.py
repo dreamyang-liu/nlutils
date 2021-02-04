@@ -1,16 +1,9 @@
 import time
 import os
 from datetime import datetime
-from enum import Enum
+from CommonDefine import LogLevel
 
-class LogLevel(Enum):
-    FATAL = 0
-    ERROR = 1
-    EXCEPTION = 2
-    WARNING = 3
-    INFO = 4
-    PERFORMANCE = 5
-    DEBUG = 6
+
 
 def get_local_time():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
