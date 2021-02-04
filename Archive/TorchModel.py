@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
+from ..Utils.Log import Logger
 
 __all__ = ['ResNet50', 'ResNet101','ResNet152']
 
@@ -106,17 +107,15 @@ class TorchModel(object):
 
     def __init__(self, model):
         self.model = model
-        
+        Logger.instance().log_info("Initialized torch Model")
         self.watcher = None
 
-    def get_parameters(self):
-        attrs = dir(self.model)
-        for attr in attrs:
-            if hasattr(self.model, attr):
-                print(attr)
-                print(type(getattr(self.model, attr)))
-                
+    def get_model_parameters(self):
+        return self.model.__str__()
     
+    def parse_model_parameters(self):
+        
+
     def update_parameter(self):
         if self.watcher is None:
             # TODO: Add warning
