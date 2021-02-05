@@ -6,6 +6,7 @@ class FigureType(Enum):
     BAR_PLOT = 2
     SCATTER_PLOT = 3
     HISTOGRAM_PLOT = 4
+    HISTOGRAM_2D_PLOT = 5
 
 class DataType(Enum):
     NUMPY_ARRAY = 0

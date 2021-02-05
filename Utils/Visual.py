@@ -31,6 +31,15 @@ def histogram_plot(figure):
     if figure.title is not None:
         plt.title(figure.title)
 
+def histogram_2d_plot(figure):
+    x = figure.Xs
+    y = figure.Ys
+    style = figure.styles
+    print(x, y, style)
+    plt.hist2d(x, y, **style)
+    if figure.title is not None:
+        plt.title(figure.title)
+
 def scatter_plot(figure):
     for x, y, style in zip(figure.Xs, figure.Ys, figure.styles):
         plt.scatter(x, y, **style)
@@ -46,7 +55,8 @@ VISUAL_DISPATCHER = {
     FigureType.BAR_PLOT:bar_plot,
     FigureType.HISTOGRAM_PLOT:histogram_plot,
     FigureType.SCATTER_PLOT:scatter_plot,
-    FigureType.HEATMAP_PLOT:heatmap_plot
+    FigureType.HEATMAP_PLOT:heatmap_plot,
+    FigureType.HISTOGRAM_2D_PLOT: histogram_2d_plot
 }
 
 

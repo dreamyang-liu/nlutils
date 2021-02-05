@@ -2,7 +2,7 @@ from CommonDefine import FigureType
 from Log import Logger
 class Figure(object):
     optional_args = ['figure_size', 'save_path', 'title', 'bar_width']
-    plot_type_x_y = [FigureType.BAR_PLOT, FigureType.POLYLINE_PLOT, FigureType.SCATTER_PLOT, FigureType.HEATMAP_PLOT]
+    plot_type_x_y = [FigureType.BAR_PLOT, FigureType.POLYLINE_PLOT, FigureType.SCATTER_PLOT, FigureType.HEATMAP_PLOT, FigureType.HISTOGRAM_2D_PLOT]
     plot_type_x = [FigureType.HISTOGRAM_PLOT]
 
     @staticmethod
@@ -28,7 +28,7 @@ class Figure(object):
         self.legends = legends
         self.Xs = Xs
         self.Ys = Ys
-        self.styles = styles if styles is not None else [{} for _ in range(len(Xs))]
+        self.styles = styles if styles is not None else [{} for _ in range(len(Xs))] if figure_type != FigureType.HISTOGRAM_2D_PLOT else {}
 
         for optional_arg in self.optional_args:
             setattr(self, optional_arg, None)
