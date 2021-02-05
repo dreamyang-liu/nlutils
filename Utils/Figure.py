@@ -2,8 +2,8 @@ from CommonDefine import FigureType
 from Log import Logger
 class Figure(object):
     optional_args = ['figure_size', 'save_path', 'title', 'bar_width']
-    plot_type_x_y = [FigureType.BAR_PLOT, FigureType.POLYLINE_PLOT, FigureType.SCATTER_PLOT, FigureType.HEATMAP_PLOT, FigureType.HISTOGRAM_2D_PLOT]
-    plot_type_x = [FigureType.HISTOGRAM_PLOT]
+    plot_type_x_y = [FigureType.BAR_PLOT, FigureType.POLYLINE_PLOT, FigureType.SCATTER_PLOT, FigureType.HISTOGRAM_2D_PLOT]
+    plot_type_x = [FigureType.HISTOGRAM_PLOT, FigureType.HEATMAP_PLOT]
 
     @staticmethod
     def check_length_identical(*args):

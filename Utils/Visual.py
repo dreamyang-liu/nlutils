@@ -7,7 +7,7 @@ from CommonDefine import FigureType
 # from .Figure import Figure
 # from .CommonDefine import FigureType
 
-def bar_plot(figure):
+def bar_plot(figure, plot):
     bar_width = figure.bar_width if figure.bar_width is not None else 0.5
     for idx, (x, y, style) in enumerate(zip(figure.Xs, figure.Ys, figure.styles)):
         plt.bar(list(map(lambda s: s+idx*bar_width, x)), y, bar_width, **style)
@@ -17,38 +17,41 @@ def bar_plot(figure):
     if figure.title is not None:
         plt.title(figure.title)
 
-def polyline_plot(figure):
+def polyline_plot(figure, plot):
     for x, y, style in zip(figure.Xs, figure.Ys, figure.styles):
         plt.plot(x, y, **style)
     plt.legend(figure.legends)
     if figure.title is not None:
         plt.title(figure.title)
 
-def histogram_plot(figure):
+def histogram_plot(figure, plot):
     for x, style in zip(figure.Xs, figure.styles):
         plt.hist(x, **style)
     plt.legend(figure.legends)
     if figure.title is not None:
         plt.title(figure.title)
 
-def histogram_2d_plot(figure):
+def histogram_2d_plot(figure, plot):
     x = figure.Xs
     y = figure.Ys
     style = figure.styles
-    print(x, y, style)
     plt.hist2d(x, y, **style)
     if figure.title is not None:
         plt.title(figure.title)
 
-def scatter_plot(figure):
+def scatter_plot(figure, plot):
     for x, y, style in zip(figure.Xs, figure.Ys, figure.styles):
         plt.scatter(x, y, **style)
     plt.legend(figure.legends)
     if figure.title is not None:
         plt.title(figure.title)
 
-def heatmap_plot(figure):
-    pass
+def heatmap_plot(figure, plot):
+    plt.imshow(figure.Xs)
+    plot.set_xticklabels(['x{}'.format(i) for i in range(7)])
+    plot.set_yticklabels(['y{}'.format(i) for i in range(2)])
+    if figure.title is not None:
+        plt.title(figure.title)
 
 VISUAL_DISPATCHER = {
     FigureType.POLYLINE_PLOT:polyline_plot,
@@ -83,11 +86,11 @@ def draw_multi_figures(figure_list):
             row = i
             break
     for plot_index in range(0, figure_number):
-        if figure_list[plot_index].figure_size is not None:
-            plt.subplot(row, col, plot_index + 1,)
-        else:
-            plt.subplot(row, col, plot_index + 1)
-        VISUAL_DISPATCHER[figure_list[plot_index].figure_type](figure_list[plot_index])
+        # if figure_list[plot_index].figure_size is not None:
+        #     plt.subplot(row, col, plot_index + 1)
+        # else:
+        plot = plt.subplot(row, col, plot_index + 1)
+        VISUAL_DISPATCHER[figure_list[plot_index].figure_type](figure_list[plot_index], plot)
     plt.show()
     
 
