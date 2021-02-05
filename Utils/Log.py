@@ -3,6 +3,9 @@ import os
 from datetime import datetime
 from CommonDefine import LogLevel
 
+# DIS
+# from .CommonDefine import LogLevel
+
 
 
 def get_local_time():

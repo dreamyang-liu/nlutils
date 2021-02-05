@@ -7,6 +7,9 @@ class FigureType(Enum):
     SCATTER_PLOT = 3
     HISTOGRAM_PLOT = 4
 
+class DataType(Enum):
+    NUMPY_ARRAY = 0
+    LIST = 1
 
 class LogLevel(Enum):
     FATAL = 0

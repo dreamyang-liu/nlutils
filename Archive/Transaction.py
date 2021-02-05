@@ -1,6 +1,6 @@
 import json
 
-from Utils.Log import Log
+from ..Utils.Log import Log
 
 class Transaction(object):
 
