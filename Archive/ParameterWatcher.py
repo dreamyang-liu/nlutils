@@ -1,8 +1,11 @@
 import json
 
+from hashlib import md5
 from functools import singledispatch
+from datetime import datetime
 from ..Utils.Log import Logger
 from ..CommonDefine import ParameterType, DEV_MODE, DevelopMode, ParameterHandlerOperation
+
 
 
 PARAMETER_OPERATION_DISPATCHER_THEME = {
@@ -24,33 +27,43 @@ PARAMETER_OPERATION_DISPATCHER_OP = {
     'Initialized': False
 }
 
+def get_md5_hash(obj):
+    md5_obj = md5()
+    md5_obj.update(obj.encode('utf8'))
+    return md5_obj.hexdigest()
 class ParameterWatcher(object):
 
     def __init__(self):
         self.model_parameters = dict()
-        self.results = dict()
         self.training_parameters = dict()
         self.miscellaneous_parameters = dict()
         self.data_parameters = dict()
         self.models = dict()
+        self.results = dict()
+        self.id = get_md5_hash(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        self.time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     def insert_parameter(self, dic, pkg):
+        Logger.instance().log_info("Inserting parameter package.")
         for key in pkg['insert_keys']:
             if key not in NECESSARY_KEYS:
                 dic[key] = pkg[key]
 
     def delete_parameter(self, dic, pkg):
+        Logger.instance().log_info("Deleting parameter package.")
         for key in pkg['delete_keys']:
             if key not in NECESSARY_KEYS:
                 dic.pop(key)
 
     def update_parameter(self, dic, pkg):
+        Logger.instance().log_info("Updating parameter package.")
         for key in pkg['update_keys']:
             if key not in NECESSARY_KEYS:
                 dic[key] = pkg[key]
         
 
     def select_parameter(self, dic, pkg):
+        Logger.instance().log_info("Selecting parameter package.")
         select_values = []
         for key in pkg['select_keys']:
             if key not in dic:
