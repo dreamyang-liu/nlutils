@@ -1,58 +1,40 @@
 import json
 
 from ..Utils.Log import Log
-
+from ..CommonDefine import ParameterType
 class Transaction(object):
 
+    PARAMETER_TRANSACTION_DISPATCHER = {
+        ParameterType.MODEL: self.model_parameter_handler,
+        ParameterType.DATA: self.data_parameter_handler,
+        ParameterType.TRANINING: self.training_parameter_handler,
+        ParameterType.MISCELLANEOUS: self.miscellaneous_parameter_handler
+    }
+
     def __init__(self):
-        self.parameters = dict()
+        self.model_parameters = dict()
         self.results = dict()
+        self.training_parameters = dict()
+        self.miscellaneous_parameters = dict()
         self.data_parameters = dict()
         self.models = dict()
+    
+    def main_parameter_handler(self, pkg:dict):
+        self.PARAMETER_TRANSACTION_DISPATCHER[pkg['parameter_type']](pkg)
 
-    def add_data_parameter(self, key, value):
-        self.data_parameters[key] = value
-    
-    def remove_data_parameter(self, key):
-        self.data_parameters.pop(key)
+    def model_parameter_handler(self, pkg):
+        pass
 
-    def update_data_parameter(self, key, value):
-        self.data_parameters[key] = value
-    
-    def get_data_parameters(self, key):
-        return self.data_parameters[key]
+    def data_parameter_handler(self, pkg):
+        pass
 
-    def add_parameter(self, key, value):
-        self.parameters[key] = value
-    
-    def remove_parameter(self, key):
-        self.parameters.pop(key)
+    def training_parameter_handler(self, pkg):
+        pass
 
-    def update_parameter(self, key, value):
-        self.parameters[key] = value
+    def miscellaneous_parameter_handler(self, pkg):
+        pass
     
-    def get_parameters(self, key):
-        return self.parameters[key]
 
-    def add_result(self, key, value):
-        self.results[key] = value
-    
-    def remove_result(self, key):
-        self.results.pop(key)
-
-    def update_result(self, key, value):
-        self.results[key] = value
-    
-    def get_result(self, key):
-        return self.results[key]
-    
-    def register_model(self, name, model):
-        self.models[name] = model
-        model.transaction = self
-    
-    def unregister_model(self, name):
-        self.models.pop(name)
-        model.transaction = None
     
 
 

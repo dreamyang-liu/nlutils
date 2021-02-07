@@ -3,8 +3,6 @@ import asyncio
 
 from ..Utils.Log import Logger
 
-
-
 class TorchModel(object):
 
     def __init__(self, model):
@@ -20,10 +18,8 @@ class TorchModel(object):
         pass
 
     def parse_model_parameters(self):
-        for line in self.model.__str__().split('\n'):
-            level = line.__len__() - line.lstrip(' ').__len__()
-            content = line.lstrip(' ').rstrip(' ')
-    
+        model_structure = [(line.__len__() - line.lstrip(' ').__len__(), line.lstrip(' ').rstrip(' '))for line in self.model.__str__().split('\n')]
+        return model_structure
 
     def update_parameter(self):
         if self.watcher is None:

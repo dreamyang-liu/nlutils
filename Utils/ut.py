@@ -1,6 +1,6 @@
 from Figure import Figure
 from Visual import draw_single_figure,draw_multi_figures
-from CommonDefine import FigureType
+from ..CommonDefine import FigureType
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,11 +28,13 @@ if __name__ == '__main__':
                     [0.1, 2.0, 0.0, 1.4, 0.0, 1.9, 6.3]])
     # styles = [{'color':'yellow', 'alpha':0.5, 'edgecolor':'green'}, {'color':'blue', 'alpha':0.3,'edgecolor':'red'}]
     # print(Xs, Ys, type(XHs))
-    fig1 = Figure(FigureType.BAR_PLOT, Xs, Ys, legends, title="Test Case", figure_size=(5, 10))
-    fig2 = Figure(FigureType.POLYLINE_PLOT, Xs, Ys, legends, title="Test Case")
-    fig3 = Figure(FigureType.SCATTER_PLOT, Xs, Ys, legends, title="Test Case")
-    fig4 = Figure(FigureType.HISTOGRAM_PLOT, XHs, legends=legends, title="Test Case")
+    fig1 = Figure(FigureType.BAR_PLOT, Xs, Ys, legends, title="Bar Plot", figure_size=(5, 10))
+    fig2 = Figure(FigureType.POLYLINE_PLOT, Xs, Ys, legends, title="Polyline Plot")
+    fig3 = Figure(FigureType.SCATTER_PLOT, Xs, Ys, legends, title="Scatter Plot")
+    fig4 = Figure(FigureType.HISTOGRAM_PLOT, XHs, legends=legends, title="His Plot")
     fig5 = Figure(FigureType.HISTOGRAM_2D_PLOT, XH2s, YH2s, styles={'bins':50}, title="Test Case")
-    fig6 = Figure(FigureType.HEATMAP_PLOT, Xs, styles={'bins':50}, title="Test Case")
+    fig6 = Figure(FigureType.HISTOGRAM_PLOT, XHs, legends=legends, title="His Plot")
+    fig7 = Figure(FigureType.HISTOGRAM_2D_PLOT, XH2s, YH2s, styles={'bins':50}, title="Test Case")
+    # fig6 = Figure(FigureType.HEATMAP_PLOT, Xs, styles={'bins':50}, title="Test Case")
     # draw_single_figure(fig1)
-    draw_multi_figures([fig1, fig2, fig3, fig4, fig5, fig6])
+    draw_multi_figures([fig1, fig2, fig3, fig4, fig5, fig6, fig7])

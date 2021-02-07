@@ -2,7 +2,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from Figure import Figure
-from CommonDefine import FigureType
+from ..CommonDefine import FigureType
 # DIS
 # from .Figure import Figure
 # from .CommonDefine import FigureType
@@ -76,20 +76,23 @@ def draw_multi_figures(figure_list):
     figure_number = figure_list.__len__()
     row = 0
     col = 0
-    for i in range(1, 1000):
-        if i * i >= figure_number:
-            row = i
+    for i in range(1, int(figure_number ** 0.5) + 1):
+        col = i
+        row = i
+        if figure_number % i == 0:
             col = i
-            break
-        if i * i < figure_number and i * i + i > figure_number:
-            col = i + 1
-            row = i
-            break
+            row = int(figure_number / i)
+        add_col = False
+        while i == int(figure_number ** 0.5) and col * row < figure_number:
+            col = col + 1 if add_col else col
+            row = row + 1 if not add_col else row
+            add_col = not add_col
+    
     for plot_index in range(0, figure_number):
         # if figure_list[plot_index].figure_size is not None:
         #     plt.subplot(row, col, plot_index + 1)
         # else:
-        plot = plt.subplot(row, col, plot_index + 1)
+        plot = plt.subplot(col, row, plot_index + 1)
         VISUAL_DISPATCHER[figure_list[plot_index].figure_type](figure_list[plot_index], plot)
     plt.show()
     

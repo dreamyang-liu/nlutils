@@ -8,6 +8,20 @@ class FigureType(Enum):
     HISTOGRAM_PLOT = 4
     HISTOGRAM_2D_PLOT = 5
 
+class ParameterType(Enum):
+    MODEL = 0
+    DATA = 1
+    TRANINING = 2
+    MISCELLANEOUS = 3
+
+class TaskTheme(Enum):
+    NLP = 0
+    CV = 1
+    DS = 2
+
+class NLPTaksType(Enum):
+    NER = 0
+
 class DataType(Enum):
     NUMPY_ARRAY = 0
     LIST = 1

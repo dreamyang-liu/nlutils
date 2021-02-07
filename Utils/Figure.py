@@ -1,4 +1,4 @@
-from CommonDefine import FigureType
+from ..CommonDefine import FigureType
 from Log import Logger
 class Figure(object):
     optional_args = ['figure_size', 'save_path', 'title', 'bar_width']
