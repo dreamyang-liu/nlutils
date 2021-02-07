@@ -1,57 +1,50 @@
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-from Figure import Figure
+from .Figure import Figure
 from ..CommonDefine import FigureType
+from functools import singledispatch
 # DIS
 # from .Figure import Figure
 # from .CommonDefine import FigureType
 
 def bar_plot(figure, plot):
-    bar_width = figure.bar_width if figure.bar_width is not None else 0.5
+    bar_width = figure.bar_width if figure.bar_width is not None else 0.2
     for idx, (x, y, style) in enumerate(zip(figure.Xs, figure.Ys, figure.styles)):
-        plt.bar(list(map(lambda s: s+idx*bar_width, x)), y, bar_width, **style)
+        plt.bar(list(map(lambda s: s + bar_width * (idx - len(figure.Xs) // 2 + 0.5 * ((len(figure.Xs) + 1) % 2)), x)), y, bar_width, **style)
         for x_real_number, y_real_number in zip(x, y):
-            plt.text(x_real_number+idx*bar_width, y_real_number+0.1, '%.0f' % y_real_number, ha='center', va='bottom', fontsize=10)
+            plt.text(x_real_number + (idx - len(figure.Xs) // 2 + 0.5 * ((len(figure.Xs) + 1) % 2)) * bar_width, y_real_number+0.1, '%.0f' % y_real_number, ha='center', va='bottom', fontsize=10)
     plt.legend(figure.legends)
-    if figure.title is not None:
-        plt.title(figure.title)
 
 def polyline_plot(figure, plot):
     for x, y, style in zip(figure.Xs, figure.Ys, figure.styles):
         plt.plot(x, y, **style)
     plt.legend(figure.legends)
-    if figure.title is not None:
-        plt.title(figure.title)
 
 def histogram_plot(figure, plot):
     for x, style in zip(figure.Xs, figure.styles):
         plt.hist(x, **style)
     plt.legend(figure.legends)
-    if figure.title is not None:
-        plt.title(figure.title)
 
 def histogram_2d_plot(figure, plot):
     x = figure.Xs
     y = figure.Ys
     style = figure.styles
     plt.hist2d(x, y, **style)
-    if figure.title is not None:
-        plt.title(figure.title)
 
 def scatter_plot(figure, plot):
     for x, y, style in zip(figure.Xs, figure.Ys, figure.styles):
         plt.scatter(x, y, **style)
     plt.legend(figure.legends)
-    if figure.title is not None:
-        plt.title(figure.title)
 
 def heatmap_plot(figure, plot):
     plt.imshow(figure.Xs)
     plot.set_xticklabels(['x{}'.format(i) for i in range(7)])
     plot.set_yticklabels(['y{}'.format(i) for i in range(2)])
-    if figure.title is not None:
-        plt.title(figure.title)
+
+def multi_modality_plot(figure_list, plot):
+    pass
+
 
 VISUAL_DISPATCHER = {
     FigureType.POLYLINE_PLOT:polyline_plot,
@@ -63,13 +56,37 @@ VISUAL_DISPATCHER = {
 }
 
 
-
+@singledispatch
 def draw_single_figure(figure):
     if figure.figure_size is not None:
-        plt.figure(figsize=figure.figure_size)
+        ax = plt.figure(figsize=figure.figure_size)
     else:
-        plt.figure()
-    VISUAL_DISPATCHER[figure.figure_type](figure)
+        ax = plt.figure()
+    VISUAL_DISPATCHER[figure.figure_type](figure, ax)
+    plt.show()
+
+@draw_single_figure.register(list)
+def _(figure_list):
+    ax = plt.figure()
+    figure_title = None
+    for figure in figure_list:
+        if figure.title is not None:
+            figure_title = figure.title
+        VISUAL_DISPATCHER[figure.figure_type](figure, ax)
+    if figure_title is not None:
+        plt.title(figure_title)
+    plt.show()
+
+
+@draw_single_figure.register(Figure)
+def _(figure):
+    if figure.figure_size is not None:
+        ax = plt.figure(figsize=figure.figure_size)
+    else:
+        ax = plt.figure()
+    VISUAL_DISPATCHER[figure.figure_type](figure, ax)
+    if figure.title is not None:
+        plt.title(figure.title)
     plt.show()
 
 def draw_multi_figures(figure_list):

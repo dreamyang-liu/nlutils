@@ -1,11 +1,15 @@
 
 import asyncio
+import torch.nn as nn
 
 from ..Utils.Log import Logger
+
 
 class TorchModel(object):
 
     def __init__(self, model):
+        if type(model) != nn.Module:
+            raise TypeError("TorchModel can only be initialized by a torch.nn.Module instance.")
         self.model = model
         Logger.instance().log_info("Initialized torch Model.")
         self.watcher = None

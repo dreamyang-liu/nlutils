@@ -1,5 +1,5 @@
 from ..CommonDefine import FigureType
-from Log import Logger
+from .Log import Logger
 class Figure(object):
     optional_args = ['figure_size', 'save_path', 'title', 'bar_width']
     plot_type_x_y = [FigureType.BAR_PLOT, FigureType.POLYLINE_PLOT, FigureType.SCATTER_PLOT, FigureType.HISTOGRAM_2D_PLOT]
