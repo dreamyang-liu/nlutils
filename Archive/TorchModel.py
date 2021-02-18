@@ -1,9 +1,26 @@
 
 import asyncio
 import torch.nn as nn
+import functools
+import inspect
 
 from ..Utils.Log import Logger
 
+def parameter_collector(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            print(func.__code__.co_varnames)
+            print(inspect.signature(func).parameters)
+            for param in inspect.signature(func).parameters.items():
+                print(param[0], param[1].default, param[1].annotation)
+                if param[1].default == inspect._empty:
+                    print("default:", inspect._empty)
+            print(args, kwargs)
+            # return func(self, *args, **kwargs)
+        except BaseException as ex:
+            raise Exception(ex.message)
+    return wrapper
 
 class TorchModel(object):
 
@@ -32,6 +49,9 @@ class TorchModel(object):
         else:
             self.watcher.update_model(self)
 
+@parameter_collector
+def test_func(a, b, c=8):
+    a = 5
+
 if __name__ == '__main__':
-    m = TorchModel(ResNet50())
-    fetch_all_parameters(ResNet50())
+    test_func(1, 2)
