@@ -31,6 +31,15 @@ def get_md5_hash(obj):
     md5_obj = md5()
     md5_obj.update(obj.encode('utf8'))
     return md5_obj.hexdigest()
+
+def handle_args_parser_params(args):
+    # print(args._get_kwargs())
+    arg_parse_dict = {'parameter_type': ParameterType.MISCELLANEOUS, 'operation_type': ParameterHandlerOperation.INSERT}
+    arg_parse_dict['insert_keys'] = []
+    for kwarg in args._get_kwargs():
+        arg_parse_dict[kwarg[0]] = arg_parse_dict[kwarg[1]]
+        arg_parse_dict['insert_keys'].append(kwarg[0])
+    return arg_parse_dict
 class ParameterWatcher(object):
 
     def __init__(self):
@@ -44,26 +53,26 @@ class ParameterWatcher(object):
         self.time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     def insert_parameter(self, dic, pkg):
-        Logger.instance().log_info("Inserting parameter package.")
+        Logger.get_logger().info("Inserting parameter package.")
         for key in pkg['insert_keys']:
             if key not in NECESSARY_KEYS:
                 dic[key] = pkg[key]
 
     def delete_parameter(self, dic, pkg):
-        Logger.instance().log_info("Deleting parameter package.")
+        Logger.get_logger().info("Deleting parameter package.")
         for key in pkg['delete_keys']:
             if key not in NECESSARY_KEYS:
                 dic.pop(key)
 
     def update_parameter(self, dic, pkg):
-        Logger.instance().log_info("Updating parameter package.")
+        Logger.get_logger().info("Updating parameter package.")
         for key in pkg['update_keys']:
             if key not in NECESSARY_KEYS:
                 dic[key] = pkg[key]
         
 
     def select_parameter(self, dic, pkg):
-        Logger.instance().log_info("Selecting parameter package.")
+        Logger.get_logger().info("Selecting parameter package.")
         select_values = []
         for key in pkg['select_keys']:
             if key not in dic:
@@ -107,11 +116,11 @@ class ParameterWatcher(object):
             PARAMETER_OPERATION_DISPATCHER_THEME[ParameterType.MISCELLANEOUS] = self.miscellaneous_parameter_handler
             PARAMETER_OPERATION_DISPATCHER_THEME['Initialized'] = True
         try:
-            Logger.instance().log_info("Checking Validation of parameter package...")
+            Logger.get_logger().info("Checking Validation of parameter package...")
             if not self.pkg_validation(pkg):
-                Logger.instance().log_error("Parameter package does not pass validtion check, your parameter may not be stored successfully !")
+                Logger.get_logger().error("Parameter package does not pass validtion check, your parameter may not be stored successfully !")
         except Exception as e:
-            Logger.instance().log_fatal("Exception occured while doing validation check for parameter package.")
+            Logger.get_logger().fatal("Exception occured while doing validation check for parameter package.")
             if DEV_MODE == DevelopMode.DEBUG:
                 raise Exception("As you are using DEBUG mode, this exception occured, please check context and fix it, or you can mute it by switching to RELEASE mode in CommonDefine.py")
         PARAMETER_OPERATION_DISPATCHER_THEME[pkg['parameter_type']](pkg)

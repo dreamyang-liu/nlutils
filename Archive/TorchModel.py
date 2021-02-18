@@ -10,14 +10,24 @@ def parameter_collector(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
-            print(func.__code__.co_varnames)
-            print(inspect.signature(func).parameters)
-            for param in inspect.signature(func).parameters.items():
-                print(param[0], param[1].default, param[1].annotation)
-                if param[1].default == inspect._empty:
-                    print("default:", inspect._empty)
+            param_dict = dict()
+            for idx, varname in enumerate(func.__code__.co_varnames):
+                if varname == 'self' and idx == 0:
+                    Logger.get_logger().warning('Encountering self arg, which may not be a necessary argument.')
+                else:
+                    param_dict[varname] = None
+            print(param_dict)
+
             print(args, kwargs)
-            # return func(self, *args, **kwargs)
+            # print(func.__code__.co_varnames)
+
+            # print(inspect.signature(func).parameters)
+            for param in inspect.signature(func).parameters.items():
+                # print(param[0], param[1].default, param[1].annotation)
+                if param[1].default != inspect._empty:
+                    param_dict[param[0]] = param[1].default
+            
+            return func(self, *args, **kwargs)
         except BaseException as ex:
             raise Exception(ex.message)
     return wrapper
@@ -25,10 +35,10 @@ def parameter_collector(func):
 class TorchModel(object):
 
     def __init__(self, model):
-        if type(model) != nn.Module:
+        if model.__class__.__bases__[0] != nn.Module:
             raise TypeError("TorchModel can only be initialized by a torch.nn.Module instance.")
         self.model = model
-        Logger.instance().log_info("Initialized torch Model.")
+        Logger.get_logger().info("Initialized torch Model.")
         self.watcher = None
 
     def get_model_parameters(self):

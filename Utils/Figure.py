@@ -16,13 +16,13 @@ class Figure(object):
     def __init__(self, figure_type, Xs, Ys=None, legends=None, styles=None, **kwargs):
         if figure_type in self.plot_type_x_y:
             if Ys is None:
-                Logger.instance().log_error("Invalid Ys, Ys cannot be None.")
+                Logger.get_logger().error("Invalid Ys, Ys cannot be None.")
                 raise ValueError('Ys cannot be None when figure type is one of {}'.format(self.plot_type_x_y))
             if not self.check_length_identical(Xs, Ys):
-                Logger.instance().log_error("Xs and Ys must have the same dimension.")
+                Logger.get_logger().error("Xs and Ys must have the same dimension.")
         elif figure_type in self.plot_type_x:
             if Ys is not None:
-                Logger.instance().log_warning("Ys will be ignored becasue current figure type is one of {}".format(self.plot_type_x))
+                Logger.get_logger().warning("Ys will be ignored becasue current figure type is one of {}".format(self.plot_type_x))
 
         self.figure_type = figure_type
         self.legends = legends
