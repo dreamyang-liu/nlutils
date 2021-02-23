@@ -1,14 +1,20 @@
 import json
 import os
 import time
+import pymongo
 
 from multiprocessing import Process, Queue
 from hashlib import md5
 from functools import singledispatch
 from datetime import datetime
+from configparser import ConfigParser
+
 from ..Utils.Log import Logger
 from ..CommonDefine import ParameterType, DEV_MODE, DevelopMode, ParameterHandlerOperation
 
+
+config = ConfigParser()
+config.read('nlutils/Archive/config.ini', encoding='utf-8')
 
 
 PARAMETER_OPERATION_DISPATCHER_THEME = {
@@ -48,11 +54,15 @@ class ParameterWatcher(object):
 
     @classmethod
     def save_to_file(cls, save_path='./params'):
+        cls.myclient = pymongo.MongoClient(host=config['mongodb']['host'], port=config['mongodb'].getint('port'), connect=False)
+        # cls.myclient = pymongo.MongoClient("mongodb://47.103.90.218:8752/", connect=False)
+        cls.db = cls.myclient.admin
+        cls.db.authenticate(config['mongodb']['username'],config['mongodb']['password'])
         while True:
-            if cls.WATCHER_QUEUE.empty():
-                Logger.get_logger().info("Empty queue, skipping this round...")
-                time.sleep(2)
-                continue
+            # if cls.WATCHER_QUEUE.empty():
+            #     Logger.get_logger().warning("Empty queue, skipping this round...")
+            #     time.sleep(2)
+            #     continue
             watcher = cls.WATCHER_QUEUE.get()
             whole_data = dict()
             whole_data['name'] = watcher.name
@@ -66,18 +76,32 @@ class ParameterWatcher(object):
             hash_code = get_md5_hash(whole_data.__str__())
             whole_data['time'] = watcher.time
             whole_data['id'] = watcher.id
-            json_str = json.dumps(whole_data)
-            name = watcher.name + '_' + hash_code + '_' + watcher.time
-            os.makedirs(save_path, exist_ok=True)
-            Logger.get_logger().info("Saving json str {}".format(json_str))
-            with open(save_path + '/{}.json'.format(name), 'w') as f:
-                f.write(json_str)
+            whole_data['hash_code'] = hash_code
+            
+            params_collection = cls.db['params']
+            
+            try:
+                next(params_collection.find({"hash_code" : hash_code}))
+                query = {"hash_code": {"$regex" : hash_code}}
+                new_val = {"$set" : whole_data}
+                params_collection.update_many(query, new_val)
+            except StopIteration:
+                params_collection.insert(whole_data)
+
+            # Saving log to local storage
+            # os.makedirs(save_path, exist_ok=True)
+            # Logger.get_logger().debug("Saving json str {}".format(json_str))
+            # json_str = json.dumps(whole_data)
+            # name = watcher.name + '_' + hash_code + '_' + watcher.time
+            # with open(save_path + '/{}.json'.format(name), 'w') as f:
+            #     f.write(json_str)
             
     @classmethod
     def run_save(cls):
         if hasattr(cls, 'save_proc'):
             Logger.get_logger().warning("Already have one saving process...")
             return False
+        Logger.get_logger().info("Starting saving process...")
         cls.save_proc = Process(target=cls.save_to_file)
         # save_proc.daemon = True 
         # Cannot set save process to daemon, otherwise save process will interupt once main thread exits.
@@ -87,7 +111,17 @@ class ParameterWatcher(object):
     @classmethod
     def terminate_save_proc(cls):
         if cls.save_proc:
+            Logger.get_logger().warning("Saving process will terminate in 5s...")
+            time.sleep(5)
+            remain_wait_round = 10
+            while not cls.WATCHER_QUEUE.empty():
+                Logger.get_logger().warning("Queue is not empty, waiting save_proc to finish remain queue tasks")
+                time.sleep(2)
+                if remain_wait_round == 0:
+                    break
+                remain_wait_round -= 1
             cls.save_proc.terminate()
+            Logger.get_logger().info("Closing saving process...")
             return True
         else:
             Logger.get_logger().warning("No saving process can be terminated...")
@@ -106,32 +140,32 @@ class ParameterWatcher(object):
         self.data_parameters = dict()
         self.models = dict()
         self.results = dict()
-        self.id = get_md5_hash(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        self.id = get_md5_hash(name + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         self.time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.name = name
         self.description = name
 
     def insert_parameter(self, dic, pkg):
-        Logger.get_logger().info("Inserting parameter package.")
+        Logger.get_logger().debug("Inserting parameter package.")
         for key in pkg['insert_keys']:
             if key not in NECESSARY_KEYS:
                 dic[key] = pkg[key]
 
     def delete_parameter(self, dic, pkg):
-        Logger.get_logger().info("Deleting parameter package.")
+        Logger.get_logger().debug("Deleting parameter package.")
         for key in pkg['delete_keys']:
             if key not in NECESSARY_KEYS:
                 dic.pop(key)
 
     def update_parameter(self, dic, pkg):
-        Logger.get_logger().info("Updating parameter package.")
+        Logger.get_logger().debug("Updating parameter package.")
         for key in pkg['update_keys']:
             if key not in NECESSARY_KEYS:
                 dic[key] = pkg[key]
         
 
     def select_parameter(self, dic, pkg):
-        Logger.get_logger().info("Selecting parameter package.")
+        Logger.get_logger().debug("Selecting parameter package.")
         select_values = []
         for key in pkg['select_keys']:
             if key not in dic:
@@ -175,7 +209,7 @@ class ParameterWatcher(object):
             PARAMETER_OPERATION_DISPATCHER_THEME[ParameterType.MISCELLANEOUS] = self.miscellaneous_parameter_handler
             PARAMETER_OPERATION_DISPATCHER_THEME['Initialized'] = True
         try:
-            Logger.get_logger().info("Checking Validation of parameter package...")
+            Logger.get_logger().debug("Checking Validation of parameter package...")
             if not self.pkg_validation(pkg):
                 Logger.get_logger().error("Parameter package does not pass validtion check, your parameter may not be stored successfully !")
         except Exception as e:
@@ -188,11 +222,11 @@ class ParameterWatcher(object):
 
 if __name__ == '__main__':
     x = ParameterWatcher('test')
-    pkgs = [{'parameter_type': ParameterType.MODEL, 'operation_type': ParameterHandlerOperation.INSERT, 'insert_keys':['time'], 'time': [100, 200, 300]} for i in range(100)]
-    # pkg2 = {'parameter_type': ParameterType.DATA, 'operation_type': ParameterHandlerOperation.DELETE}
-    # pkg3 = {'parameter_type': ParameterType.TRANINING, 'operation_type': ParameterHandlerOperation.UPDATE}
-    # pkg4 = {'parameter_type': ParameterType.MISCELLANEOUS, 'operation_type': ParameterHandlerOperation.SELECT}
-    for pkg in pkgs:
-        x.main_parameter_handler(pkg)
-    time.sleep(5)
+    pkgs1 = [{'parameter_type': ParameterType.MODEL, 'operation_type': ParameterHandlerOperation.INSERT, 'insert_keys':['time'], 'time': [100, 200, 300]} for i in range(100)]
+    pkgs2 = [{'parameter_type': ParameterType.DATA, 'operation_type': ParameterHandlerOperation.INSERT, 'insert_keys':['time'], 'time': [100, 200, 300]} for i in range(100)]
+    pkgs3 = [{'parameter_type': ParameterType.TRANINING, 'operation_type': ParameterHandlerOperation.INSERT, 'insert_keys':['time'], 'time': [100, 200, 300]} for i in range(100)]
+    for pkgs in [pkgs1, pkgs2, pkgs3]:
+        for pkg in pkgs:
+            x.main_parameter_handler(pkg)
+    # time.sleep(5)
     ParameterWatcher.terminate_save_proc()

@@ -17,7 +17,7 @@ class Logger(object):
     _instance = None
 
     @classmethod
-    def get_logger(cls, level='DEBUG', write_to_file=False, log_path='/tmp/log-{}'.format(get_local_time())):
+    def get_logger(cls, level='INFO', write_to_file=False, log_path='/tmp/log-{}'.format(get_local_time())):
         if cls._instance:
             return cls._instance
         write_to_file = write_to_file
