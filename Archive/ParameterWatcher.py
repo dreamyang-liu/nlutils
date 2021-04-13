@@ -7,14 +7,12 @@ from multiprocessing import Process, Queue
 from hashlib import md5
 from functools import singledispatch
 from datetime import datetime
-from configparser import ConfigParser
+from functools import partial
 
 from ..Utils.Log import Logger
 from ..CommonDefine import ParameterType, DEV_MODE, DevelopMode, ParameterHandlerOperation
 
 
-config = ConfigParser()
-config.read('nlutils/Archive/config.ini', encoding='utf-8')
 
 
 PARAMETER_OPERATION_DISPATCHER_THEME = {
@@ -53,11 +51,26 @@ def handle_args_parser_params(args):
 class ParameterWatcher(object):
 
     @classmethod
-    def save_to_file(cls, save_path='./params'):
-        cls.myclient = pymongo.MongoClient(host=config['mongodb']['host'], port=config['mongodb'].getint('port'), connect=False)
+    def config_mongodb_server(cls, host:str, ip:int, username:str, password:str):
+        cls.mongodb = dict()
+        cls.mongodb['host'] = host
+        cls.mongodb['port'] = port
+        cls.mongodb['username'] = username
+        cls.mongodb['password'] = password
+
+        cls.myclient = pymongo.MongoClient(host=cls.mongodb['host'], port=cls.mongodb['host'], connect=False)
         # cls.myclient = pymongo.MongoClient("mongodb://47.103.90.218:8752/", connect=False)
         cls.db = cls.myclient.admin
-        cls.db.authenticate(config['mongodb']['username'],config['mongodb']['password'])
+        cls.db.authenticate(cls.mongodb['username'], cls.mongodb['password'])
+        
+        cls._configed = True
+        
+
+
+    @classmethod
+    def save_to_file(cls, save_path='./params', save_to_cloud=False):
+        if save_to_cloud and not cls._configed:
+            raise ValueError(f"save_to_cloud cannot be set to {save_to_cloud} becasuse cls._configured is False")
         while True:
             # if cls.WATCHER_QUEUE.empty():
             #     Logger.get_logger().warning("Empty queue, skipping this round...")
@@ -145,80 +158,53 @@ class ParameterWatcher(object):
         self.name = name
         self.description = name
 
-    def insert_parameter(self, dic, pkg):
-        Logger.get_logger().debug("Inserting parameter package.")
-        for key in pkg['insert_keys']:
-            if key not in NECESSARY_KEYS:
-                dic[key] = pkg[key]
+    def insert_model_parameters(self, key, value):
+        self.model_parameters[key] = value
+    
+    def insert_training_parameters(self, key, value):
+        self.training_parameters[key]
+    
+    def insert_miscellaneous_parameters(self, key, value):
+        self.miscellaneous_parameters[key] = value
+    
+    def insert_data_parameters(self, key, value):
+        self.data_parameters[key] = value
+    
+    def get_model_parameter_by_key(self, key):
+        return self.model_parameters[key]
+    
+    def get_training_parameter_by_key(self, key):
+        return self.training_parameters[key]
+    
+    def get_miscellaneous_parameter_by_key(self, key):
+        return self.miscellaneous_param[key]
 
-    def delete_parameter(self, dic, pkg):
-        Logger.get_logger().debug("Deleting parameter package.")
-        for key in pkg['delete_keys']:
-            if key not in NECESSARY_KEYS:
-                dic.pop(key)
+    def get_data_parameter_by_key(self, key):
+        return self.data_parameters[key]
 
-    def update_parameter(self, dic, pkg):
-        Logger.get_logger().debug("Updating parameter package.")
-        for key in pkg['update_keys']:
-            if key not in NECESSARY_KEYS:
-                dic[key] = pkg[key]
-        
+    def delete_model_parameter_by_key(self, key):
+        self.model_parameters.pop(key)
 
-    def select_parameter(self, dic, pkg):
-        Logger.get_logger().debug("Selecting parameter package.")
-        select_values = []
-        for key in pkg['select_keys']:
-            if key not in dic:
-                select_values.append({key: dic[key]})
-        return select_values
+    def delete_training_parameter_by_key(self, key):
+        self.training_parameters.pop(key)
 
-    def pkg_validation(self, pkg):
-        for key in NECESSARY_KEYS:
-            if key not in pkg.keys():
-                return False
-            if pkg is None:
-                return False
-        return True
+    def delete_miscellaneous_parameter_by_key(self, key):
+        self.miscellaneous_param.pop(key)
 
-    def main_operation_handler(self, dic, pkg):
-        if PARAMETER_OPERATION_DISPATCHER_OP['Initialized'] == False:
-            PARAMETER_OPERATION_DISPATCHER_OP[ParameterHandlerOperation.INSERT] = self.insert_parameter
-            PARAMETER_OPERATION_DISPATCHER_OP[ParameterHandlerOperation.DELETE] = self.delete_parameter
-            PARAMETER_OPERATION_DISPATCHER_OP[ParameterHandlerOperation.UPDATE] = self.update_parameter
-            PARAMETER_OPERATION_DISPATCHER_OP[ParameterHandlerOperation.SELECT] = self.select_parameter
-            PARAMETER_OPERATION_DISPATCHER_OP['Initialized'] = True
-        return PARAMETER_OPERATION_DISPATCHER_OP[pkg['operation_type']](dic, pkg)
+    def delete_data_parameter_by_key(self, key):
+        self.data_parameters.pop(key) 
 
-    def model_parameter_handler(self, pkg):
-        return self.main_operation_handler(self.model_parameters, pkg)
+    def update_model_parameter_by_key(self, key, value):
+        self.model_parameters[key] = value
 
-    def data_parameter_handler(self, pkg):
-        return self.main_operation_handler(self.data_parameters, pkg)
+    def update_training_parameter_by_key(self, key, value):
+        self.training_parameters[key] = value
 
-    def training_parameter_handler(self, pkg):
-        return self.main_operation_handler(self.training_parameters, pkg)
-
-    def miscellaneous_parameter_handler(self, pkg):
-        return self.main_operation_handler(self.miscellaneous_parameters, pkg)
-
-    def main_parameter_handler(self, pkg:dict):
-        if PARAMETER_OPERATION_DISPATCHER_THEME['Initialized'] == False:
-            PARAMETER_OPERATION_DISPATCHER_THEME[ParameterType.MODEL] = self.model_parameter_handler
-            PARAMETER_OPERATION_DISPATCHER_THEME[ParameterType.DATA] = self.data_parameter_handler
-            PARAMETER_OPERATION_DISPATCHER_THEME[ParameterType.TRANINING] = self.training_parameter_handler
-            PARAMETER_OPERATION_DISPATCHER_THEME[ParameterType.MISCELLANEOUS] = self.miscellaneous_parameter_handler
-            PARAMETER_OPERATION_DISPATCHER_THEME['Initialized'] = True
-        try:
-            Logger.get_logger().debug("Checking Validation of parameter package...")
-            if not self.pkg_validation(pkg):
-                Logger.get_logger().error("Parameter package does not pass validtion check, your parameter may not be stored successfully !")
-        except Exception as e:
-            Logger.get_logger().fatal("Exception occured while doing validation check for parameter package.")
-            if DEV_MODE == DevelopMode.DEBUG:
-                raise Exception("As you are using DEBUG mode, this exception occured, please check context and fix it, or you can mute it by switching to RELEASE mode in CommonDefine.py")
-        PARAMETER_OPERATION_DISPATCHER_THEME[pkg['parameter_type']](pkg)
-        ParameterWatcher.WATCHER_QUEUE.put(self, block=False)
-
+    def update_miscellaneous_parameter_by_key(self, key, value):
+        self.miscellaneous_param[key] = value
+    
+    def update_data_parameter_by_key(self, key, value):
+        self.data_parameters[key] = value
 
 if __name__ == '__main__':
     x = ParameterWatcher('test')
