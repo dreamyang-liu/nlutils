@@ -177,7 +177,7 @@ class ParameterWatcher(object):
         return self.training_parameters[key]
     
     def get_miscellaneous_parameter_by_key(self, key):
-        return self.miscellaneous_param[key]
+        return self.miscellaneous_parameters[key]
 
     def get_data_parameter_by_key(self, key):
         return self.data_parameters[key]
@@ -189,7 +189,7 @@ class ParameterWatcher(object):
         self.training_parameters.pop(key)
 
     def delete_miscellaneous_parameter_by_key(self, key):
-        self.miscellaneous_param.pop(key)
+        self.miscellaneous_parameters.pop(key)
 
     def delete_data_parameter_by_key(self, key):
         self.data_parameters.pop(key) 
@@ -201,7 +201,7 @@ class ParameterWatcher(object):
         self.training_parameters[key] = value
 
     def update_miscellaneous_parameter_by_key(self, key, value):
-        self.miscellaneous_param[key] = value
+        self.miscellaneous_parameters[key] = value
     
     def update_data_parameter_by_key(self, key, value):
         self.data_parameters[key] = value
