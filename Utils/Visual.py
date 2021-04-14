@@ -1,8 +1,8 @@
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-from .Figure import Figure
-from ..CommonDefine import FigureType
+from nlutils.Utils.Figure import Figure
+from nlutils.CommonDefine import FigureType
 from functools import singledispatch
 # DIS
 # from .Figure import Figure

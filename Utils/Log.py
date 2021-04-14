@@ -1,7 +1,7 @@
 import time
 import os
 from datetime import datetime
-from ..CommonDefine import LogLevel
+from nlutils.CommonDefine import LogLevel
 
 # DIS
 # from .CommonDefine import LogLevel
