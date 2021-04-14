@@ -1,6 +1,7 @@
 import json
 import os
 import time
+import inspect
 import pymongo
 
 from multiprocessing import Process, Queue
@@ -9,30 +10,8 @@ from functools import singledispatch
 from datetime import datetime
 from functools import partial
 
-from ..Utils.Log import Logger
-from ..CommonDefine import ParameterType, DEV_MODE, DevelopMode, ParameterHandlerOperation
-
-
-
-
-PARAMETER_OPERATION_DISPATCHER_THEME = {
-    ParameterType.MODEL: None,
-    ParameterType.DATA: None,
-    ParameterType.TRANINING: None,
-    ParameterType.MISCELLANEOUS: None,
-    'Initialized': False
-}
-
-VALID_OPERATION_TYPE = ('INSERT', 'DELETE', 'UPDATE', 'SELECT')
-NECESSARY_KEYS = {'parameter_type', 'operation_type'}
-
-PARAMETER_OPERATION_DISPATCHER_OP = {
-    ParameterHandlerOperation.INSERT: None,
-    ParameterHandlerOperation.DELETE: None,
-    ParameterHandlerOperation.UPDATE: None,
-    ParameterHandlerOperation.SELECT: None,
-    'Initialized': False
-}
+from nlutils.Utils.Log import Logger
+from nlutils.CommonDefine import ParameterType, DEV_MODE, DevelopMode, ParameterHandlerOperation
 
 def get_md5_hash(obj):
     md5_obj = md5()
@@ -47,6 +26,19 @@ def handle_args_parser_params(args):
         arg_parse_dict[kwarg[0]] = arg_parse_dict[kwarg[1]]
         arg_parse_dict['insert_keys'].append(kwarg[0])
     return arg_parse_dict
+
+
+
+def retrieve_name(var):
+        """
+        Gets the name of var. Does it from the out most frame inner-wards.
+        :param var: variable to get name from.
+        :return: string
+        """
+        for fi in reversed(inspect.stack()):
+            names = [var_name for var_name, var_val in fi.frame.f_locals.items() if var_val is var]
+            if len(names) > 0:
+                return names[0]
 
 class ParameterWatcher(object):
 
@@ -142,8 +134,9 @@ class ParameterWatcher(object):
     
     def __new__(cls,*args,**kwargs):
         if not hasattr(cls, 'WATCHER_QUEUE'):
-            cls.WATCHER_QUEUE = Queue()
-            cls.run_save()
+            pass
+            # cls.WATCHER_QUEUE = Queue()
+            # cls.run_save()
         return super().__new__(cls)
 
     def __init__(self, name):
@@ -153,7 +146,7 @@ class ParameterWatcher(object):
         self.data_parameters = dict()
         self.models = dict()
         self.results = dict()
-        self.id = get_md5_hash(name + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        self.id = get_md5_hash(name + f'{time.time()}')
         self.time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.name = name
         self.description = name
@@ -205,12 +198,50 @@ class ParameterWatcher(object):
     
     def update_data_parameter_by_key(self, key, value):
         self.data_parameters[key] = value
+    
+    def insert_batch_model_parameters(self, parameter_list):
+        for param in parameter_list:
+            param_name = retrieve_name(param)
+            self.insert_model_parameters(param_name, param)
+    
+    def insert_batch_training_parameters(self, parameter_list):
+        for param in parameter_list:
+            param_name = retrieve_name(param)
+            self.insert_training_parameters(param_name, param)
+    
+    def insert_batch_miscellaneous_parameters(self, parameter_list):
+        for param in parameter_list:
+            param_name = retrieve_name(param)
+            self.insert_miscellaneous_parameters(param_name, param)
+
+    def insert_batch_data_parameters(self, parameter_list):
+        for param in parameter_list:
+            param_name = retrieve_name(param)
+            self.insert_data_parameters(param_name, param)
+    
+    def update_batch_model_parameters(self, parameter_list):
+        for param in parameter_list:
+            param_name = retrieve_name(param)
+            self.update_model_parameter_by_key(param_name, param)
+    
+    def update_batch_training_parameters(self, parameter_list):
+        for param in parameter_list:
+            param_name = retrieve_name(param)
+            self.update_training_parameter_by_key(param_name, param)
+    
+    def update_batch_miscellaneous_parameters(self, parameter_list):
+        for param in parameter_list:
+            param_name = retrieve_name(param)
+            self.update_miscellaneous_parameter_by_key(param_name, param)
+    
+    def update_batch_data_parameters(self, parameter_list):
+        for param in parameter_list:
+            param_name = retrieve_name(param)
+            self.update_data_parameter_by_key(param_name, param)
+
 
 if __name__ == '__main__':
     x = ParameterWatcher('test')
-    pkgs1 = [{'parameter_type': ParameterType.MODEL, 'operation_type': ParameterHandlerOperation.INSERT, 'insert_keys':['time'], 'time': [100, 200, 300]} for i in range(100)]
-    pkgs2 = [{'parameter_type': ParameterType.DATA, 'operation_type': ParameterHandlerOperation.INSERT, 'insert_keys':['time'], 'time': [100, 200, 300]} for i in range(100)]
-    pkgs3 = [{'parameter_type': ParameterType.TRANINING, 'operation_type': ParameterHandlerOperation.INSERT, 'insert_keys':['time'], 'time': [100, 200, 300]} for i in range(100)]
     for pkgs in [pkgs1, pkgs2, pkgs3]:
         for pkg in pkgs:
             x.main_parameter_handler(pkg)
