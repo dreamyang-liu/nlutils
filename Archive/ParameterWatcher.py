@@ -1,8 +1,11 @@
+# coding: utf-8
 import json
 import os
 import time
 import inspect
+import random
 import pymongo
+import atexit
 
 from multiprocessing import Process, Queue
 from hashlib import md5
@@ -17,17 +20,6 @@ def get_md5_hash(obj):
     md5_obj = md5()
     md5_obj.update(obj.encode('utf8'))
     return md5_obj.hexdigest()
-
-def handle_args_parser_params(args):
-    # print(args._get_kwargs())
-    arg_parse_dict = {'parameter_type': ParameterType.MISCELLANEOUS, 'operation_type': ParameterHandlerOperation.INSERT}
-    arg_parse_dict['insert_keys'] = []
-    for kwarg in args._get_kwargs():
-        arg_parse_dict[kwarg[0]] = arg_parse_dict[kwarg[1]]
-        arg_parse_dict['insert_keys'].append(kwarg[0])
-    return arg_parse_dict
-
-
 
 def retrieve_name(var):
         """
@@ -55,13 +47,13 @@ class ParameterWatcher(object):
         cls.db = cls.myclient.admin
         cls.db.authenticate(cls.mongodb['username'], cls.mongodb['password'])
         
-        cls._configed = True
+        cls._mongodb_configed = True
         
 
 
     @classmethod
-    def save_to_file(cls, save_path='./params', save_to_cloud=False):
-        if save_to_cloud and not cls._configed:
+    def save_to_file(cls, save_to_cloud=False):
+        if save_to_cloud and not cls._mongodb_configed:
             raise ValueError(f"save_to_cloud cannot be set to {save_to_cloud} becasuse cls._configured is False")
         while True:
             # if cls.WATCHER_QUEUE.empty():
@@ -95,7 +87,6 @@ class ParameterWatcher(object):
 
             # Saving log to local storage
             # os.makedirs(save_path, exist_ok=True)
-            # Logger.get_logger().debug("Saving json str {}".format(json_str))
             # json_str = json.dumps(whole_data)
             # name = watcher.name + '_' + hash_code + '_' + watcher.time
             # with open(save_path + '/{}.json'.format(name), 'w') as f:
@@ -140,27 +131,70 @@ class ParameterWatcher(object):
         return super().__new__(cls)
 
     def __init__(self, name):
+        atexit.register(self.close_save)
         self.model_parameters = dict()
         self.training_parameters = dict()
         self.miscellaneous_parameters = dict()
         self.data_parameters = dict()
         self.models = dict()
         self.results = dict()
-        self.id = get_md5_hash(name + f'{time.time()}')
+        self.id = get_md5_hash(f'{name}-{time.time()}-{random.random()}')
         self.time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.name = name
         self.description = name
+        self.save_dir = './params'
+    
+    def close_save(self):
+        os.makedirs(self.save_dir, exist_ok=True)
+        self.set_description("This nodue ")
+        whole_data = dict()
+        whole_data['name'] = self.name
+        whole_data['description'] = self.description
+        whole_data['model_parameters'] = self.model_parameters
+        whole_data['training_parameters'] = self.training_parameters
+        whole_data['data_parameters'] = self.data_parameters
+        whole_data['miscellaneous_parameters'] = self.data_parameters
+        whole_data['models'] = self.models
+        whole_data['results'] = self.results
+        hash_code = get_md5_hash(whole_data.__str__())
+        whole_data['time'] = self.time
+        whole_data['end_time_stamp'] = time.time()
+        whole_data['id'] = self.id
+        whole_data['hash_code'] = hash_code
+
+        # json_str = json.dumps(whole_data)
+        with open(f"{self.save_dir}/{self.name}-{self.time}-{self.id}.json", "w") as f:
+            json.dump(whole_data, f)
+
+    def insert_results(self, key, value):
+        self.results[key] = value
+    
+    def insert_batch_results(self, result_list):
+        for result in result_list:
+            result_name = retrieve_name(result)
+            self.results[result_name] = result
+
+    def set_description(self, description):
+        self.description = description
 
     def insert_model_parameters(self, key, value):
+        if key in self.model_parameters.keys():
+            raise ValueError(f"Key: {key} already exists...")
         self.model_parameters[key] = value
     
     def insert_training_parameters(self, key, value):
+        if key in self.training_parameters.keys():
+            raise ValueError(f"Key: {key} already exists...")
         self.training_parameters[key]
     
     def insert_miscellaneous_parameters(self, key, value):
+        if key in self.miscellaneous_parameters.keys():
+            raise ValueError(f"Key: {key} already exists...")
         self.miscellaneous_parameters[key] = value
     
     def insert_data_parameters(self, key, value):
+        if key in self.data_parameters.keys():
+            raise ValueError(f"Key: {key} already exists...")
         self.data_parameters[key] = value
     
     def get_model_parameter_by_key(self, key):
@@ -242,8 +276,8 @@ class ParameterWatcher(object):
 
 if __name__ == '__main__':
     x = ParameterWatcher('test')
-    for pkgs in [pkgs1, pkgs2, pkgs3]:
-        for pkg in pkgs:
-            x.main_parameter_handler(pkg)
-    # time.sleep(5)
-    ParameterWatcher.terminate_save_proc()
+    epoch = 1
+    lr = 0.01
+    params = [epoch, lr]
+    x.insert_batch_model_parameters(params)
+    print(x.model_parameters)
