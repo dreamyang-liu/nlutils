@@ -4,7 +4,7 @@ import torch.nn as nn
 import functools
 import inspect
 
-from nlutils.Utils.Log import Logger
+from ..Utils.Log import Logger
 
 def parameter_collector(func):
     @functools.wraps(func)

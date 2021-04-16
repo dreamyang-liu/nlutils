@@ -1,6 +1,6 @@
-from nlutils.Utils.Figure import Figure
-from nlutils.Utils.Visual import draw_single_figure,draw_multi_figures
-from nlutils.CommonDefine import FigureType
+from .Figure import Figure
+from .Visual import draw_single_figure,draw_multi_figures
+from ..CommonDefine import FigureType
 
 import matplotlib.pyplot as plt
 import numpy as np

@@ -13,8 +13,8 @@ from functools import singledispatch
 from datetime import datetime
 from functools import partial
 
-from nlutils.Utils.Log import Logger
-from nlutils.CommonDefine import ParameterType, DEV_MODE, DevelopMode, ParameterHandlerOperation
+from ..Utils.Log import Logger
+from ..CommonDefine import ParameterType, DEV_MODE, DevelopMode, ParameterHandlerOperation
 
 def get_md5_hash(obj):
     md5_obj = md5()
@@ -162,11 +162,13 @@ class ParameterWatcher(object):
         whole_data['id'] = self.id
         whole_data['hash_code'] = hash_code
 
-        # json_str = json.dumps(whole_data)
         with open(f"{self.save_dir}/{self.name}-{self.time}-{self.id}.json", "w") as f:
             json.dump(whole_data, f)
 
     def insert_results(self, key, value):
+        if key in self.results.keys():
+            self.save_dir = f'{self.save_dir}/fail'
+            raise ValueError(f"Key: {key} already exists in ...")
         self.results[key] = value
     
     def insert_batch_results(self, result_list):
@@ -179,21 +181,25 @@ class ParameterWatcher(object):
 
     def insert_model_parameters(self, key, value):
         if key in self.model_parameters.keys():
+            self.save_dir = f'{self.save_dir}/fail'
             raise ValueError(f"Key: {key} already exists...")
         self.model_parameters[key] = value
     
     def insert_training_parameters(self, key, value):
         if key in self.training_parameters.keys():
+            self.save_dir = f'{self.save_dir}/fail'
             raise ValueError(f"Key: {key} already exists...")
         self.training_parameters[key]
     
     def insert_miscellaneous_parameters(self, key, value):
         if key in self.miscellaneous_parameters.keys():
+            self.save_dir = f'{self.save_dir}/fail'
             raise ValueError(f"Key: {key} already exists...")
         self.miscellaneous_parameters[key] = value
     
     def insert_data_parameters(self, key, value):
         if key in self.data_parameters.keys():
+            self.save_dir = f'{self.save_dir}/fail'
             raise ValueError(f"Key: {key} already exists...")
         self.data_parameters[key] = value
     
