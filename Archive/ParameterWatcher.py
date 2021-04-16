@@ -132,6 +132,7 @@ class ParameterWatcher(object):
 
     def __init__(self, name):
         atexit.register(self.close_save)
+        self.parameters = dict()
         self.model_parameters = dict()
         self.training_parameters = dict()
         self.miscellaneous_parameters = dict()
@@ -146,10 +147,13 @@ class ParameterWatcher(object):
     
     def close_save(self):
         os.makedirs(self.save_dir, exist_ok=True)
+        if 'fail' not in self.save_dir:
+            os.makedirs(f'{self.save_dir}/{self.time[:10]}', exist_ok=True)
         self.set_description("This nodue ")
         whole_data = dict()
         whole_data['name'] = self.name
         whole_data['description'] = self.description
+        whole_data['parameters'] = self.parameters
         whole_data['model_parameters'] = self.model_parameters
         whole_data['training_parameters'] = self.training_parameters
         whole_data['data_parameters'] = self.data_parameters
@@ -161,9 +165,21 @@ class ParameterWatcher(object):
         whole_data['end_time_stamp'] = time.time()
         whole_data['id'] = self.id
         whole_data['hash_code'] = hash_code
+        if 'fail' in self.save_dir:
+            with open(f"{self.save_dir}/{self.name}-{self.time}-{self.id}.json", "w") as f:
+                json.dump(whole_data, f)
+        else:
+            with open(f"{self.save_dir}/{self.time[:10]}/{self.name}-{self.time}-{self.id}.json", "w") as f:
+                json.dump(whole_data, f)
+    
+    def set_parameters(self, parameters):
+        self.parameters = parameters
 
-        with open(f"{self.save_dir}/{self.name}-{self.time}-{self.id}.json", "w") as f:
-            json.dump(whole_data, f)
+    def insert_parameters(self, key, value):
+        self.parameters[key] = value
+
+    def insert_models(self, key, value):
+        self.models[key] = value
 
     def insert_results(self, key, value):
         if key in self.results.keys():
