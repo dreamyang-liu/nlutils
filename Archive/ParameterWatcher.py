@@ -130,7 +130,7 @@ class ParameterWatcher(object):
             # cls.run_save()
         return super().__new__(cls)
 
-    def __init__(self, name):
+    def __init__(self, name, local_save=True):
         atexit.register(self.close_save)
         self.parameters = dict()
         self.model_parameters = dict()
@@ -143,9 +143,12 @@ class ParameterWatcher(object):
         self.time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.name = name
         self.description = name
-        self.save_dir = './params'
+        self.save_dir = f'./params/{self.name}'
+        self.local_save = local_save
     
     def close_save(self):
+        if not self.local_save:
+            return
         os.makedirs(self.save_dir, exist_ok=True)
         if 'fail' not in self.save_dir:
             os.makedirs(f'{self.save_dir}/{self.time[:10]}', exist_ok=True)
@@ -171,6 +174,16 @@ class ParameterWatcher(object):
         else:
             with open(f"{self.save_dir}/{self.time[:10]}/{self.name}-{self.time}-{self.id}.json", "w") as f:
                 json.dump(whole_data, f)
+    
+    def disable_local_save(self):
+        self.local_save = False
+
+    def enable_local_save(self):
+        self.local_save = True
+
+    def set_parameter_by_argparser(self, args):
+        parameters = {f'{key}': val for key, val in args._get_kwargs()}
+        self.set_parameters(parameters)
     
     def set_parameters(self, parameters):
         self.parameters = parameters
