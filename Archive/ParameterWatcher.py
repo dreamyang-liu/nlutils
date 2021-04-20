@@ -141,6 +141,7 @@ class ParameterWatcher(object):
         self.results = dict()
         self.id = get_md5_hash(f'{name}-{time.time()}-{random.random()}')
         self.time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self.start_time_stamp = time.time()
         self.name = name
         self.description = name
         self.save_dir = f'./params/{self.name}'
@@ -149,10 +150,15 @@ class ParameterWatcher(object):
     def close_save(self):
         if not self.local_save:
             return
+        if len(self.results) == 0:
+            if 'fail' in self.save_dir:
+                pass
+            else:
+                self.save_dir = f'{self.save_dir}/fail'
+                Logger.get_logger().warning("No results saved, experiment could be interrupted during the training...")
         os.makedirs(self.save_dir, exist_ok=True)
         if 'fail' not in self.save_dir:
             os.makedirs(f'{self.save_dir}/{self.time[:10]}', exist_ok=True)
-        self.set_description("This nodue ")
         whole_data = dict()
         whole_data['name'] = self.name
         whole_data['description'] = self.description
@@ -165,7 +171,9 @@ class ParameterWatcher(object):
         whole_data['results'] = self.results
         hash_code = get_md5_hash(whole_data.__str__())
         whole_data['time'] = self.time
+        whole_data['start_time_stamp'] = self.start_time_stamp
         whole_data['end_time_stamp'] = time.time()
+        whole_data['time_consumed'] = self.start_time_stamp - whole_data['end_time_stamp']
         whole_data['id'] = self.id
         whole_data['hash_code'] = hash_code
         if 'fail' in self.save_dir:
