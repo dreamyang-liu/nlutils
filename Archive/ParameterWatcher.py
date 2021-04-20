@@ -173,7 +173,7 @@ class ParameterWatcher(object):
         whole_data['time'] = self.time
         whole_data['start_time_stamp'] = self.start_time_stamp
         whole_data['end_time_stamp'] = time.time()
-        whole_data['time_consumed'] = self.start_time_stamp - whole_data['end_time_stamp']
+        whole_data['time_consumed'] = whole_data['end_time_stamp'] - self.start_time_stamp
         whole_data['id'] = self.id
         whole_data['hash_code'] = hash_code
         if 'fail' in self.save_dir:
