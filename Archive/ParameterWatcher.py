@@ -160,8 +160,16 @@ class ParameterWatcher(object):
         if 'fail' not in self.save_dir:
             os.makedirs(f'{self.save_dir}/{self.time[:10]}', exist_ok=True)
         whole_data = dict()
-        whole_data['name'] = self.name
-        whole_data['description'] = self.description
+        basic_data = dict()
+        basic_data['name'] = self.name
+        basic_data['description'] = self.description
+        basic_data['time'] = self.time
+        basic_data['start_time_stamp'] = self.start_time_stamp
+        basic_data['end_time_stamp'] = time.time()
+        basic_data['time_consumed'] = whole_data['end_time_stamp'] - self.start_time_stamp
+        basic_data['id'] = self.id
+        basic_data['hash_code'] = hash_code
+        whole_data['basic_parameters'] = basic_data
         whole_data['parameters'] = self.parameters
         whole_data['model_parameters'] = self.model_parameters
         whole_data['training_parameters'] = self.training_parameters
@@ -170,12 +178,6 @@ class ParameterWatcher(object):
         whole_data['models'] = self.models
         whole_data['results'] = self.results
         hash_code = get_md5_hash(whole_data.__str__())
-        whole_data['time'] = self.time
-        whole_data['start_time_stamp'] = self.start_time_stamp
-        whole_data['end_time_stamp'] = time.time()
-        whole_data['time_consumed'] = whole_data['end_time_stamp'] - self.start_time_stamp
-        whole_data['id'] = self.id
-        whole_data['hash_code'] = hash_code
         if 'fail' in self.save_dir:
             with open(f"{self.save_dir}/{self.name}-{self.time}-{self.id}.json", "w") as f:
                 json.dump(whole_data, f)
