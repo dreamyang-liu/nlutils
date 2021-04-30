@@ -197,9 +197,12 @@ class ParameterWatcher(object):
     
     def set_parameters(self, parameters):
         self.parameters = parameters
+    
+    def insert_update(self, container, key, value):
+        container[key] = value if str(value) != 'NaN' else 'NaN'
 
     def insert_parameters(self, key, value):
-        self.parameters[key] = value
+        self.insert_update(self.parameters, key, value)
 
     def insert_models(self, key, value):
         self.models[key] = value
@@ -208,12 +211,12 @@ class ParameterWatcher(object):
         if key in self.results.keys():
             self.save_dir = f'{self.save_dir}/fail'
             raise ValueError(f"Key: {key} already exists in ...")
-        self.results[key] = value
+        self.insert_update(self.results, key, value)
     
     def insert_batch_results(self, result_list):
         for result in result_list:
             result_name = retrieve_name(result)
-            self.results[result_name] = result
+            self.insert_update(self.results, result_name, result)
 
     def set_description(self, description):
         self.description = description
@@ -222,25 +225,25 @@ class ParameterWatcher(object):
         if key in self.model_parameters.keys():
             self.save_dir = f'{self.save_dir}/fail'
             raise ValueError(f"Key: {key} already exists...")
-        self.model_parameters[key] = value
+        self.insert_update(self.model_parameters, key, value)
     
     def insert_training_parameters(self, key, value):
         if key in self.training_parameters.keys():
             self.save_dir = f'{self.save_dir}/fail'
             raise ValueError(f"Key: {key} already exists...")
-        self.training_parameters[key]
+        self.insert_update(self.training_parameters, key, value)
     
     def insert_miscellaneous_parameters(self, key, value):
         if key in self.miscellaneous_parameters.keys():
             self.save_dir = f'{self.save_dir}/fail'
             raise ValueError(f"Key: {key} already exists...")
-        self.miscellaneous_parameters[key] = value
+        self.insert_update(self.miscellaneous_parameters, key, value)
     
     def insert_data_parameters(self, key, value):
         if key in self.data_parameters.keys():
             self.save_dir = f'{self.save_dir}/fail'
             raise ValueError(f"Key: {key} already exists...")
-        self.data_parameters[key] = value
+        self.insert_update(self.data_parameters, key, value)
     
     def get_model_parameter_by_key(self, key):
         return self.model_parameters[key]
@@ -267,16 +270,16 @@ class ParameterWatcher(object):
         self.data_parameters.pop(key) 
 
     def update_model_parameter_by_key(self, key, value):
-        self.model_parameters[key] = value
+        self.insert_update(self.model_parameters, key, value)
 
     def update_training_parameter_by_key(self, key, value):
-        self.training_parameters[key] = value
+        self.insert_update(self.training_parameters, key, value)
 
     def update_miscellaneous_parameter_by_key(self, key, value):
-        self.miscellaneous_parameters[key] = value
+        self.insert_update(self.miscellaneous_parameters, key, value)
     
     def update_data_parameter_by_key(self, key, value):
-        self.data_parameters[key] = value
+        self.insert_update(self.data_parameters, key, value)
     
     def insert_batch_model_parameters(self, parameter_list):
         for param in parameter_list:
