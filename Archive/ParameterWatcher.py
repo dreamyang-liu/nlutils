@@ -6,6 +6,7 @@ import inspect
 import random
 import pymongo
 import atexit
+import subprocess
 
 from multiprocessing import Process, Queue
 from hashlib import md5
@@ -31,6 +32,9 @@ def retrieve_name(var):
             names = [var_name for var_name, var_val in fi.frame.f_locals.items() if var_val is var]
             if len(names) > 0:
                 return names[0]
+
+def get_commit_id():
+    return subprocess.getoutput("git log -1 | grep commit | awk '{print $2}'")
 
 class ParameterWatcher(object):
 
@@ -166,10 +170,9 @@ class ParameterWatcher(object):
         basic_data['time'] = self.time
         basic_data['start_time_stamp'] = self.start_time_stamp
         basic_data['end_time_stamp'] = time.time()
-        basic_data['time_consumed'] = whole_data['end_time_stamp'] - self.start_time_stamp
+        basic_data['time_consumed'] = basic_data['end_time_stamp'] - self.start_time_stamp
         basic_data['id'] = self.id
-        basic_data['hash_code'] = hash_code
-        whole_data['basic_parameters'] = basic_data
+        basic_data['commit_id'] = get_commit_id()
         whole_data['parameters'] = self.parameters
         whole_data['model_parameters'] = self.model_parameters
         whole_data['training_parameters'] = self.training_parameters
@@ -178,6 +181,8 @@ class ParameterWatcher(object):
         whole_data['models'] = self.models
         whole_data['results'] = self.results
         hash_code = get_md5_hash(whole_data.__str__())
+        basic_data['hash_code'] = hash_code
+        whole_data['basic_parameters'] = basic_data
         if 'fail' in self.save_dir:
             with open(f"{self.save_dir}/{self.name}-{self.time}-{self.id}.json", "w") as f:
                 json.dump(whole_data, f)
