@@ -36,66 +36,34 @@ def retrieve_name(var):
 def get_commit_id():
     return subprocess.getoutput("git log -1 | grep commit | awk '{print $2}'")
 
+
+def check_dict(obj):
+    for k, v in obj.items():
+        if type(v) is dict:
+            obj[k] = check_dict(v)
+        else:
+            if 'tolist' in dir(v):
+                obj[k] = v.tolist()
+    return obj
+
 class ParameterWatcher(object):
 
-    @classmethod
-    def config_mongodb_server(cls, host:str, ip:int, username:str, password:str):
-        cls.mongodb = dict()
-        cls.mongodb['host'] = host
-        cls.mongodb['port'] = port
-        cls.mongodb['username'] = username
-        cls.mongodb['password'] = password
+    # @classmethod
+    # def config_mongodb_server(cls, host:str, ip:int, username:str, password:str):
+    #     cls.mongodb = dict()
+    #     cls.mongodb['host'] = host
+    #     cls.mongodb['port'] = port
+    #     cls.mongodb['username'] = username
+    #     cls.mongodb['password'] = password
 
-        cls.myclient = pymongo.MongoClient(host=cls.mongodb['host'], port=cls.mongodb['host'], connect=False)
-        # cls.myclient = pymongo.MongoClient("mongodb://47.103.90.218:8752/", connect=False)
-        cls.db = cls.myclient.admin
-        cls.db.authenticate(cls.mongodb['username'], cls.mongodb['password'])
+    #     cls.myclient = pymongo.MongoClient(host=cls.mongodb['host'], port=cls.mongodb['host'], connect=False)
+    #     # cls.myclient = pymongo.MongoClient("mongodb://47.103.90.218:8752/", connect=False)
+    #     cls.db = cls.myclient.admin
+    #     cls.db.authenticate(cls.mongodb['username'], cls.mongodb['password'])
         
-        cls._mongodb_configed = True
+    #     cls._mongodb_configed = True
         
 
-
-    @classmethod
-    def save_to_file(cls, save_to_cloud=False):
-        if save_to_cloud and not cls._mongodb_configed:
-            raise ValueError(f"save_to_cloud cannot be set to {save_to_cloud} becasuse cls._configured is False")
-        while True:
-            # if cls.WATCHER_QUEUE.empty():
-            #     Logger.get_logger().warning("Empty queue, skipping this round...")
-            #     time.sleep(2)
-            #     continue
-            watcher = cls.WATCHER_QUEUE.get()
-            whole_data = dict()
-            whole_data['name'] = watcher.name
-            whole_data['description'] = watcher.description
-            whole_data['model_parameters'] = watcher.model_parameters
-            whole_data['training_parameters'] = watcher.training_parameters
-            whole_data['data_parameters'] = watcher.data_parameters
-            whole_data['miscellaneous_parameters'] = watcher.data_parameters
-            whole_data['models'] = watcher.models
-            whole_data['results'] = watcher.results
-            hash_code = get_md5_hash(whole_data.__str__())
-            whole_data['time'] = watcher.time
-            whole_data['id'] = watcher.id
-            whole_data['hash_code'] = hash_code
-            
-            params_collection = cls.db['params']
-            
-            try:
-                next(params_collection.find({"hash_code" : hash_code}))
-                query = {"hash_code": {"$regex" : hash_code}}
-                new_val = {"$set" : whole_data}
-                params_collection.update_many(query, new_val)
-            except StopIteration:
-                params_collection.insert(whole_data)
-
-            # Saving log to local storage
-            # os.makedirs(save_path, exist_ok=True)
-            # json_str = json.dumps(whole_data)
-            # name = watcher.name + '_' + hash_code + '_' + watcher.time
-            # with open(save_path + '/{}.json'.format(name), 'w') as f:
-            #     f.write(json_str)
-            
     @classmethod
     def run_save(cls):
         if hasattr(cls, 'save_proc'):
@@ -150,7 +118,7 @@ class ParameterWatcher(object):
         self.description = name
         self.save_dir = f'./params/{self.name}'
         self.local_save = local_save
-    
+
     def close_save(self):
         if not self.local_save:
             return
@@ -183,6 +151,7 @@ class ParameterWatcher(object):
         hash_code = get_md5_hash(whole_data.__str__())
         basic_data['hash_code'] = hash_code
         whole_data['basic_parameters'] = basic_data
+        whole_data = check_dict(whole_data)
         if 'fail' in self.save_dir:
             with open(f"{self.save_dir}/{self.name}-{self.time}-{self.id}.json", "w") as f:
                 json.dump(whole_data, f)

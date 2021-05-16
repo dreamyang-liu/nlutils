@@ -11,8 +11,6 @@ import coloredlogs
 
 def get_local_time():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-
 class Logger(object):
     _instance = None
 
@@ -49,6 +47,8 @@ class Logger(object):
             end = time.time()
             print("\033[1;36m{}\033[0m \033[1;34mPERFORMANCE: {} consumes {} seconds\033[0m".format(get_local_time(), func.__name__, end -start))
         return wrapper        
+
+default_logger = Logger().get_logger()
 
 if __name__ == '__main__':
     # calculate_time()
