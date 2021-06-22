@@ -16,6 +16,7 @@ from functools import partial
 
 from ..Utils.Log import Logger
 from ..CommonDefine import ParameterType, DEV_MODE, DevelopMode, ParameterHandlerOperation
+from .WeChatAssistant import WeChatAssistant
 
 def get_md5_hash(obj):
     md5_obj = md5()
@@ -102,7 +103,7 @@ class ParameterWatcher(object):
             # cls.run_save()
         return super().__new__(cls)
 
-    def __init__(self, name, local_save=True):
+    def __init__(self, name, local_save=True, enable_wechat_notification=False):
         atexit.register(self.close_save)
         self.parameters = dict()
         self.model_parameters = dict()
@@ -118,6 +119,10 @@ class ParameterWatcher(object):
         self.description = name
         self.save_dir = f'./params/{self.name}'
         self.local_save = local_save
+        self.enable_wechat_notification = enable_wechat_notification
+        self.wechat_bot = None
+        if self.enable_wechat_notification:
+            self.wechat_bot = WeChatAssistant()
 
     def close_save(self):
         if not self.local_save:
@@ -152,6 +157,8 @@ class ParameterWatcher(object):
         basic_data['hash_code'] = hash_code
         whole_data['basic_parameters'] = basic_data
         whole_data = check_dict(whole_data)
+        # TODO: Use template to make it better
+        self.wechat_bot.send_to_filehelper(whole_data.__str__())
         if 'fail' in self.save_dir:
             with open(f"{self.save_dir}/{self.name}-{self.time}-{self.id}.json", "w") as f:
                 json.dump(whole_data, f)

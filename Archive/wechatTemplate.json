@@ -1,0 +1,14 @@
+{
+    "unknownException": "[EXCEPTION]: Unknown exception occurred.",
+    "exceptionOccur": "[EXCEPTION]: ",
+    "trainingStart": "",
+    "trainingComplet": "",
+    "trainingProcessing": "",
+    "trainingFail": "",
+    "loadDataStart": "",
+    "loadDataComplet": "",
+    "loadDataProcessing": "",
+    "loadDataFail": "",
+    "evaluationStart": "",
+    "evaluationComplete": ""
+}
