@@ -3,6 +3,25 @@ import subprocess
 from multiprocessing import Process, Queue, Lock, Pool
 from .Log import Logger
 from .Exception import *
+from abc import abstractmethod, ABCMeta
+
+class Strategy(ABCMeta):
+
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, 'instance'):
+            cls.instance = cls.__new__(cls, *args, **kwargs)
+        return cls.instance
+    
+    @abstractmethod
+    def run(self, *args, **kwargs):
+        pass
+
+class DeviceLoad(Strategy):
+
+    def run(self, **kwargs):
+        server_infos = kwargs.get('server_infos')
+        task_infos = kwargs.get('task_infos')
+        # TODO implement more logic here
 
 
 def get_all_device_memory():

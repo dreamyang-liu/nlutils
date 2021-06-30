@@ -117,7 +117,7 @@ class ParameterWatcher(object):
         self.start_time_stamp = time.time()
         self.name = name
         self.description = name
-        self.save_dir = f'./params/{self.name}'
+        self.save_dir = f'~/.nlutils/params/{self.name}' # Avoid sudo access requirement
         self.local_save = local_save
         self.enable_wechat_notification = enable_wechat_notification
         self.wechat_bot = None
