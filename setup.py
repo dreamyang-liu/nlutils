@@ -7,7 +7,7 @@ from distutils.core import setup
 #You could be more specific.
 
 setup(name = "nlutils",
-    version = "0.0.6",
+    version = "0.0.16",
     description = "Toolkit for Mr. Liu",
     author = "Nikola Liu",
     author_email = "nikolaliu@icloud.com",
@@ -19,7 +19,6 @@ setup(name = "nlutils",
     packages = find_packages(),
     install_requires=[
           'coloredlogs',
-          'torch',
           'tqdm',
           'matplotlib',
           'pandas',
