@@ -15,7 +15,6 @@ from datetime import datetime
 from functools import partial
 
 from ..Utils.Log import Logger
-from ..CommonDefine import ParameterType, DEV_MODE, DevelopMode, ParameterHandlerOperation
 from .WeChatAssistant import WeChatAssistant
 
 def get_md5_hash(obj):
