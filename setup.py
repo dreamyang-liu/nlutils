@@ -7,7 +7,7 @@ from distutils.core import setup
 #You could be more specific.
 
 setup(name = "nlutils",
-    version = "0.0.16",
+    version = "0.0.17",
     description = "Toolkit for Mr. Liu",
     author = "Nikola Liu",
     author_email = "nikolaliu@icloud.com",
@@ -20,9 +20,6 @@ setup(name = "nlutils",
     install_requires=[
           'coloredlogs',
           'tqdm',
-          'matplotlib',
-          'pandas',
-          'pymongo'
       ],
     #'package' package must contain files (see list above)
     #I called the package 'package' thus cleverly confusing the whole issue...

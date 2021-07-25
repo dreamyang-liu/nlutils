@@ -22,7 +22,7 @@ class SocketSenderProxy(object):
         self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.socket.connect((host, port))
         try:
-            msg = self.create_pkg(self, msg)
+            msg = self.create_pkg(msg)
             buffer = self.seralize(msg)
             self.socket.sendall(buffer)
             self.socket.close()
