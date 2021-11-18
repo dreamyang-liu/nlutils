@@ -50,11 +50,4 @@ class Logger(object):
 default_logger = Logger().get_logger()
 
 if __name__ == '__main__':
-    # calculate_time()
-    # Logger.get_logger().warning("This is a test warning.")
-    # Logger.get_logger().error("This is a test error.")
-    Logger.get_logger().debug("This is a test fatal.")
-    Logger.get_logger().warn("This is a test warn.")
-    Logger.get_logger().error("This is a test error.")
-    Logger.get_logger().info("This is a test info.")
-    Logger.get_logger().log_debug("This is a test debug.")
+    ...

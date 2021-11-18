@@ -1,8 +1,8 @@
 import os
 import subprocess
-from multiprocessing import Process, Queue, Lock, Pool
-from .Log import Logger
-from .Exception import *
+from multiprocessing import Pool
+from ..Utils.Log import Logger
+from ..Utils.Exception import *
 from abc import abstractmethod, ABCMeta
 
 class Strategy(ABCMeta):

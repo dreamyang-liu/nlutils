@@ -13,7 +13,7 @@ def request_handler(msg):
 class WeChatAssistant(object):
 
     def __init__(self):
-        itchat.auto_login(hostReload=True, enableCmdQR=2)
+        itchat.auto_login(hotReload=True, enableCmdQR=2)
         self.contact_map = defaultdict(list)
         friends = itchat.get_friends()
         for friend in friends:

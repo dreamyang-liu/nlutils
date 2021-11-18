@@ -16,6 +16,9 @@ from functools import partial
 
 from ..Utils.Log import Logger
 from .WeChatAssistant import WeChatAssistant
+from ..Utils.EmailUtils import EmailManager
+
+DEFAULT_LOG_PATH = 'nlutils/params'
 
 def get_md5_hash(obj):
     md5_obj = md5()
@@ -23,15 +26,10 @@ def get_md5_hash(obj):
     return md5_obj.hexdigest()
 
 def retrieve_name(var):
-        """
-        Gets the name of var. Does it from the out most frame inner-wards.
-        :param var: variable to get name from.
-        :return: string
-        """
-        for fi in reversed(inspect.stack()):
-            names = [var_name for var_name, var_val in fi.frame.f_locals.items() if var_val is var]
-            if len(names) > 0:
-                return names[0]
+    for fi in reversed(inspect.stack()):
+        names = [var_name for var_name, var_val in fi.frame.f_locals.items() if var_val is var]
+        if len(names) > 0:
+            return names[0]
 
 def get_commit_id():
     return subprocess.getoutput("git log -1 | grep commit | awk '{print $2}'")
@@ -48,6 +46,7 @@ def check_dict(obj):
 
 class ParameterWatcher(object):
 
+    # MongoDB
     # @classmethod
     # def config_mongodb_server(cls, host:str, ip:int, username:str, password:str):
     #     cls.mongodb = dict()
@@ -102,9 +101,10 @@ class ParameterWatcher(object):
             # cls.run_save()
         return super().__new__(cls)
 
-    def __init__(self, name, local_save=True, enable_wechat_notification=False):
+    def __init__(self, name, local_save=True, enable_wechat_notification=False, enable_email_notification=False, email_address=None, email_crediential=None, email_receiver_address=None):
         atexit.register(self.close_save)
         self.parameters = dict()
+        self.shown_parameter_names = []
         self.model_parameters = dict()
         self.training_parameters = dict()
         self.miscellaneous_parameters = dict()
@@ -116,12 +116,17 @@ class ParameterWatcher(object):
         self.start_time_stamp = time.time()
         self.name = name
         self.description = name
-        self.save_dir = f'~/.nlutils/params/{self.name}' # Avoid sudo access requirement
+        self.save_dir = f'{DEFAULT_LOG_PATH}/{self.name}' # Avoid sudo access requirement
         self.local_save = local_save
         self.enable_wechat_notification = enable_wechat_notification
+        self.enable_email_notification = enable_email_notification
+        self.email_receiver_address = email_receiver_address
         self.wechat_bot = None
         if self.enable_wechat_notification:
             self.wechat_bot = WeChatAssistant()
+        self.email_proxy = None
+        if self.enable_wechat_notification:
+            self.email_proxy = EmailManager(email_address, email_crediential)
 
     def close_save(self):
         if not self.local_save:
@@ -157,13 +162,22 @@ class ParameterWatcher(object):
         whole_data['basic_parameters'] = basic_data
         whole_data = check_dict(whole_data)
         # TODO: Use template to make it better
-        self.wechat_bot.send_to_filehelper(whole_data.__str__())
+        if self.enable_wechat_notification:
+            self.email_proxy.send_to(self.email_receiver_address, f'{self.name}-{self.time}-{hash_code}', whole_data.__str__())
+        if self.wechat_bot is not None:
+            self.wechat_bot.send_to_filehelper(whole_data.__str__())
         if 'fail' in self.save_dir:
             with open(f"{self.save_dir}/{self.name}-{self.time}-{self.id}.json", "w") as f:
                 json.dump(whole_data, f)
         else:
             with open(f"{self.save_dir}/{self.time[:10]}/{self.name}-{self.time}-{self.id}.json", "w") as f:
                 json.dump(whole_data, f)
+    
+    def insert_shown_parameter_names(self, name):
+        self.shown_parameter_names.append(retrieve_name(name))
+    
+    def insert_batch_shown_parameter_names(self, names:list):
+        self.shown_parameter_names.extend(map(lambda x: retrieve_name(x), names))
     
     def disable_local_save(self):
         self.local_save = False
@@ -301,11 +315,17 @@ class ParameterWatcher(object):
             param_name = retrieve_name(param)
             self.update_data_parameter_by_key(param_name, param)
 
+def merge_files():
+    whole_text = '['
+    for root, _, files in os.walk(DEFAULT_LOG_PATH):
+        for file in files:
+            if file.endswith('.json'):
+                if 'fail' not in os.path.abspath(os.path.join(root, file)):
+                    with open(os.path.join(root, file), 'r') as f:
+                        whole_text += f.read() + ','
+    whole_text = whole_text[:-1] + ']'
+    with open('all_log.json', 'w') as f:
+        f.write(whole_text)
 
 if __name__ == '__main__':
-    x = ParameterWatcher('test')
-    epoch = 1
-    lr = 0.01
-    params = [epoch, lr]
-    x.insert_batch_model_parameters(params)
-    print(x.model_parameters)
+    ...
