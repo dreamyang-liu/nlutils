@@ -33,14 +33,15 @@ class Logger(object):
         cls._instance = logger
         return cls._instance
     
-    @staticmethod
-    def log_performance(func):
-        def wrapper():
-            start = time.time()
-            func()
-            end = time.time()
-            print("\033[1;36m{}\033[0m \033[1;34mPERFORMANCE: {} consumes {} seconds\033[0m".format(get_local_time(), func.__name__, end -start))
-        return wrapper        
+class PerformanceProfile:
+    def __init__(self, name):
+        self.name = name
+
+    def __enter__(self):
+        self.start = time.time()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print(f'\033[1;34mPERFORMANCE PROFILE: \033[1;36m{self.name}\033[1;34m took \033[1;36m{time.time() - self.start:.2f}\033[1;34m seconds\033[0m')
 
 default_logger = Logger().get_logger()
 
