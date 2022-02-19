@@ -2,9 +2,6 @@ import time
 import os
 from datetime import datetime
 
-# DIS
-# from .CommonDefine import LogLevel
-
 import logging
 import coloredlogs
 
@@ -31,9 +28,7 @@ class Logger(object):
         fmt = "%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s"
         formatter = logging.Formatter("%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s")
         handler.setFormatter(formatter)
-        # fhandler.setFormatter(formatter)
         logger.addHandler(handler)
-        # logger.addHandler(fhandler)
         coloredlogs.install(fmt=fmt, level=level, logger=logger)
         cls._instance = logger
         return cls._instance

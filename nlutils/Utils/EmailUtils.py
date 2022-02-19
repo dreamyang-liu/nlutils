@@ -3,9 +3,6 @@ from email.mime.text import MIMEText
 from email.utils import formataddr
 from nlutils.Utils.Log import default_logger
 
-__all__ = ['default_email_manager']
-
-
 class EmailManager(object):
 
     def __new__(cls,*args,**kwargs):
@@ -46,8 +43,6 @@ class EmailManager(object):
 
     def __del__(self):
         self.proxy.close()
-
-default_email_manager = EmailManager()
 
 if __name__ == '__main__':
     man = EmailManager()
