@@ -1,4 +1,4 @@
-from nlutils import Logger, PerformanceProfile
+from nlutils_mini import Logger, PerformanceProfile
 
 
 with PerformanceProfile("range n"):
