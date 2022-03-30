@@ -138,6 +138,10 @@ class ParameterWatcher(object):
         parameters = {f'{key}': val for key, val in args._get_kwargs()}
         self.set_parameters(parameters)
     
+    def set_parameters_by_dict(self, dict):
+        for k, v in dict.items():
+            self.insert_parameters(k, v)
+    
     def set_parameters(self, parameters):
         self.parameters = parameters
     
