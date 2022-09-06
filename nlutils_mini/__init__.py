@@ -1,4 +1,4 @@
 from .Log import Logger
 from .Log import PerformanceProfile
-from .ParameterWatcher import ParameterWatcher
+from .ExperimentLogger import ExperimentLogger
 from .TrainingManager import TrainingManager

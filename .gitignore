@@ -1,6 +1,6 @@
-.vscode
-__pycache__
-*.pyc
 dist/
+__pycache__/
+legacy/
 *.egg-info
-*.json
+unittest/
+.idea/

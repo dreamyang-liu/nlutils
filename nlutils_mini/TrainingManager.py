@@ -1,12 +1,26 @@
-from multiprocessing import Pool
+from multiprocessing import Pool, Queue, Process
 from .Log import Logger
-
+from functools import wraps
+import time
 import os
 
-class TrainingManager(object):
 
+def gpu_wrapper():
+    def decorate(func, gpu_id):
+        os.system("export CUDA_VISIBLE_DEVICES={}".format(gpu_id))
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorate
+
+
+class TrainingManager(object):
     def __init__(self):
-        pass
+        self.training_pool = None
 
     @staticmethod
     def shell_training(cmd_str):
@@ -18,10 +32,3 @@ class TrainingManager(object):
         self.training_pool.map(TrainingManager.shell_training, cmd_strs)
         self.training_pool.close()
         self.training_pool.join()
-    
-    def start_api_training(self, entry, arg_list):
-        self.training_pool = Pool(arg_list)
-        self.training_pool.map(entry, arg_list)
-        self.training_pool.close()
-        self.training_pool.join()
-
