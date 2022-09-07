@@ -1,4 +1,3 @@
-
 ### Generate the version number
 release_type=$1
 
@@ -16,6 +15,7 @@ for i in $(cat release_info); do
     fi
 done
 
+old_version=$version_mega_major.$version_major.$version_minor
 
 if [ $release_type = 1 ]; then
     version_mega_major=$((version_mega_major+1))
@@ -31,10 +31,11 @@ else
     exit 1
 fi
 
-echo "Releasing version $version_mega_major.$version_major.$version_minor"
-echo "$version_mega_major $version_major $version_minor" > release_info
 new_version="$version_mega_major.$version_major.$version_minor"
-echo "New version: $new_version"
+
+echo "$version_mega_major $version_major $version_minor" > release_info
+
+echo "Releasing $old_version -> $new_version"
 
 ### Build package and upload to PyPi
 rm -rf dist
