@@ -5,3 +5,5 @@ legacy/
 unittest/
 .idea/
 *.new
+.vscode/
+.DS_Store

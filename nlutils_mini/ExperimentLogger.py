@@ -13,13 +13,6 @@ def insert_update(container, key, value):
 
 class ExperimentLogger(object):
 
-    instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if cls.instance is None:
-            cls.instance = super().__new__(cls)
-        return cls.instance
-
     def __init__(self, name):
         atexit.register(self.close_save)
         self.id = generate_MD5(f"{name}-{time.time()}-{random.random()}")
