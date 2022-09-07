@@ -39,6 +39,4 @@ echo "Releasing $old_version -> $new_version"
 
 ### Build package and upload to PyPi
 rm -rf dist
-sed "s/@version/$new_version/" setup.py > setup.py.new
-python setup.py.new sdist
-twine upload dist/*
+sed "s/@version/$new_version/" setup.py.template > setup.py
