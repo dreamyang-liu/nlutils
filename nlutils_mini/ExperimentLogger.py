@@ -4,7 +4,7 @@ import random
 import atexit
 from datetime import datetime
 from .Logger import Logger
-from utils import *
+from .utils import *
 
 
 def insert_update(container, key, value):
@@ -53,7 +53,7 @@ class ExperimentLogger(object):
         experiment_profile["begin_timestamp"] = self.clip_decimal(self.begin_timestamp)
         experiment_profile["end_timestamp"] = self.clip_decimal(time.time())
         experiment_profile["elapsed_in_s"] = self.clip_decimal(
-            experiment_profile["end_time_stamp"] - experiment_profile["begin_timestamp"]
+            experiment_profile["end_timestamp"] - experiment_profile["begin_timestamp"]
         )
 
         experiment_log["parameters"] = self.parameters
@@ -63,8 +63,8 @@ class ExperimentLogger(object):
             self.parameters.__str__() + self.performance.__str__()
         )
         experiment_log["profile"] = experiment_profile
-        experiment_log = check_dict(experiment_log)
-
+        experiment_log = convert_tolistible_object_to_list(experiment_log)
+        os.makedirs(f"{self.save_dir}/{self.begin_time_string[:10]}", exist_ok=True)
         with open(
             f"{self.save_dir}/{self.begin_time_string[:10]}/{self.name}-{self.begin_time_string}-{self.id}.json",
             "w",

@@ -4,7 +4,7 @@ import subprocess
 from hashlib import md5
 
 ## CONSTANTS
-DEFAULT_LOG_PATH = "nlutils/params"
+DEFAULT_LOG_PATH = "nlutils/logs"
 
 
 def convert_tolistible_object_to_list(obj):
