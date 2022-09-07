@@ -1,7 +1,6 @@
 from multiprocessing import Pool, Queue, Process
-from .Log import Logger
+from .Logger import Logger
 from functools import wraps
-import time
 import os
 
 
@@ -18,7 +17,7 @@ def gpu_wrapper():
     return decorate
 
 
-class TrainingManager(object):
+class ParallelTrain(object):
     def __init__(self):
         self.training_pool = None
 
@@ -29,6 +28,6 @@ class TrainingManager(object):
 
     def start_shell_training(self, cmd_strs):
         self.training_pool = Pool(len(cmd_strs))
-        self.training_pool.map(TrainingManager.shell_training, cmd_strs)
+        self.training_pool.map(ParallelTrain.shell_training, cmd_strs)
         self.training_pool.close()
         self.training_pool.join()

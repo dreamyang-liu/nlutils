@@ -3,7 +3,7 @@ import time
 import random
 import atexit
 from datetime import datetime
-from .Log import Logger
+from .Logger import Logger
 from utils import *
 
 
@@ -22,15 +22,14 @@ class ExperimentLogger(object):
 
     def __init__(self, name):
         atexit.register(self.close_save)
-        self.parameters = dict()
-        self.shown_parameter_names = []
-        self.performance = None
-        self.id = get_md5_hash(f"{name}-{time.time()}-{random.random()}")
+        self.id = generate_MD5(f"{name}-{time.time()}-{random.random()}")
         self.begin_time_string = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.begin_timestamp = time.time()
         self.name = name
-        self.description = ""
         self.save_dir = f"{DEFAULT_LOG_PATH}/{self.name}"
+        self.parameters = dict()
+        self.shown_parameter_names = []
+        self.performance = None
 
     @staticmethod
     def clip_decimal(x):
@@ -49,7 +48,7 @@ class ExperimentLogger(object):
 
         experiment_profile["name"] = self.name
         experiment_profile["id"] = self.id
-        experiment_profile["commit_id"] = get_commit_id()
+        experiment_profile["commit_id"] = retrieve_commit_id()
 
         experiment_profile["begin_timestamp"] = self.clip_decimal(self.begin_timestamp)
         experiment_profile["end_timestamp"] = self.clip_decimal(time.time())
@@ -60,7 +59,7 @@ class ExperimentLogger(object):
         experiment_log["parameters"] = self.parameters
         experiment_log["performance"] = self.performance
 
-        experiment_profile["MD5"] = get_md5_hash(
+        experiment_profile["MD5"] = generate_MD5(
             self.parameters.__str__() + self.performance.__str__()
         )
         experiment_log["profile"] = experiment_profile
@@ -108,9 +107,6 @@ class ExperimentLogger(object):
         for result in result_list:
             result_name = retrieve_var_name(result)
             self.insert_performance(result_name, result)
-
-    def set_description(self, description):
-        self.description = description
 
 
 if __name__ == "__main__":

@@ -3,13 +3,14 @@ import inspect
 import subprocess
 from hashlib import md5
 
+## CONSTANTS
 DEFAULT_LOG_PATH = "nlutils/params"
 
 
-def check_dict(obj):
+def convert_tolistible_object_to_list(obj):
     for k, v in obj.items():
         if type(v) is dict:
-            obj[k] = check_dict(v)
+            obj[k] = convert_tolistible_object_to_list(v)
         else:
             if "tolist" in dir(v):
                 obj[k] = v.tolist()
@@ -29,7 +30,7 @@ def merge_files():
         f.write(whole_text)
 
 
-def get_md5_hash(obj):
+def generate_MD5(obj):
     md5_obj = md5()
     md5_obj.update(obj.encode("utf8"))
     return md5_obj.hexdigest()
@@ -46,5 +47,5 @@ def retrieve_var_name(var):
             return names[0]
 
 
-def get_commit_id():
+def retrieve_commit_id():
     return subprocess.getoutput("git log -1 | grep commit | awk '{print $2}'")

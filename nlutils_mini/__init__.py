@@ -1,4 +1,4 @@
-from .Log import Logger
-from .Log import PerformanceProfile
+from .Logger import Logger
+from .Logger import PerformanceProfile
 from .ExperimentLogger import ExperimentLogger
-from .TrainingManager import TrainingManager
+from .ParallelTrain import ParallelTrain
