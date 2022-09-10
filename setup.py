@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 from distutils.core import setup
 
 setup(name = "nlutils-mini",
-    version = "0.0.5",
+    version = "0.0.6",
     description = "Toolkit for neural learning training",
     author = "Nikola Liu",
     author_email = "nikolaliu@icloud.com",
